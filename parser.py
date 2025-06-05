@@ -22,8 +22,23 @@ class Parser:
 
     def parse(self):
         while self.current()[0] != 'EOF':
-            self.ast.append(self.parse_statement())
+            if self.current()[0] == 'EMIT':
+                self.ast.append(self.parse_emit())
+            else:
+                self.ast.append(self.parse_statement())
         return self.ast
+
+    def parse_emit(self):
+        self.eat('EMIT')
+        value_type, value = self.current()
+        if value_type not in ('STRING', 'IDENT'):
+            raise SyntaxError(f'Expected STRING or IDENT after emit, got {value_type}')
+        self.position += 1
+        self.eat('SEMICOLON')
+        return {
+            'kind': 'emit',
+            'value': value
+        }
 
     def parse_statement(self):
         var_type = self.eat('TYPE')

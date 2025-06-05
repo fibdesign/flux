@@ -15,5 +15,5 @@ ast = parser.parse()
 interpreter = Interpreter(ast)
 interpreter.run()
 
-print('✅ Execution finished.\n🧠 Environment memory:')
-print(json.dumps(interpreter.dump(), indent=2))
+print('✅  Execution finished.')
+# print(json.dumps(interpreter.dump(), indent=2))

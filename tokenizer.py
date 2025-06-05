@@ -6,6 +6,7 @@ token_spec = [
     ('TYPE',    r'\b(int|string|bool|array|object)\b'),
     ('AS',      r'\bas\b'),
     ('CONST',   r'\bconst\b'),
+    ('EMIT',     r'\bemit\b'),
     ('BOOLEAN', r'\b(true|false)\b'),
     ('IDENT',   r'[a-zA-Z_][a-zA-Z0-9_]*'),
     ('STRING',  r"'[^']*'"),

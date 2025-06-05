@@ -7,7 +7,25 @@ class Interpreter:
 
     def run(self):
         for statement in self.ast:
-            self.execute(statement)
+            if statement.get('kind') == 'emit':
+                self.execute_emit(statement)
+            else:
+                self.execute(statement)
+
+    def execute_emit(self, stmt):
+        val = stmt['value']
+
+        if isinstance(val, str):
+            if val in self.environment:
+                print(self.environment[val]['value'])  # اگر متغیره
+            elif val.startswith("'") and val.endswith("'"):
+                print(val[1:-1])  # اگر رشته مستقیمه
+            else:
+                raise NameError(f"Variable '{val}' is not defined.")
+        else:
+            print(val)
+
+
 
     def execute(self, stmt):
         var_type = stmt['type']
