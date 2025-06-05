@@ -4,10 +4,14 @@ import re
 
 token_spec = [
     ('TYPE',    r'\b(int|string|bool|array|object)\b'),
+    ('BOOLEAN', r'\b(true|false)\b'),
     ('AS',      r'\bas\b'),
     ('CONST',   r'\bconst\b'),
     ('EMIT',     r'\bemit\b'),
-    ('BOOLEAN', r'\b(true|false)\b'),
+    ('PLUS',     r'\+'),
+    ('MINUS',    r'-'),
+    ('STAR',     r'\*'),
+    ('SLASH',    r'/'),
     ('IDENT',   r'[a-zA-Z_][a-zA-Z0-9_]*'),
     ('STRING',  r"'[^']*'"),
     ('NUMBER',  r'\b\d+\b'),

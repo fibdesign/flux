@@ -1,5 +1,3 @@
-# interpreter.py
-
 class Interpreter:
     def __init__(self, ast):
         self.ast = ast
@@ -13,39 +11,55 @@ class Interpreter:
                 self.execute(statement)
 
     def execute_emit(self, stmt):
-        val = stmt['value']
+        val = self.evaluate(stmt['value'])
+        print(val)
 
-        if isinstance(val, str):
-            if val in self.environment:
-                print(self.environment[val]['value'])  # اگر متغیره
-            elif val.startswith("'") and val.endswith("'"):
-                print(val[1:-1])  # اگر رشته مستقیمه
-            else:
-                raise NameError(f"Variable '{val}' is not defined.")
-        else:
-            print(val)
+    def evaluate(self, expr):
+        if isinstance(expr, tuple):  # مقدار ساده
+            kind, val = expr
+            if kind == 'STRING':
+                return val[1:-1]
+            elif kind == 'NUMBER':
+                return int(val)
+            elif kind == 'BOOLEAN':
+                return val == 'true'
+            elif kind == 'IDENT':
+                if val not in self.environment:
+                    raise NameError(f'Variable {val} not defined')
+                return self.environment[val]['value']
 
+        elif isinstance(expr, dict) and expr['type'] == 'binary_expression':
+            left = self.evaluate(expr['left'])
+            right = self.evaluate(expr['right'])
+            op = expr['operator']
 
+            # Type-safe operations
+            if op == '+':
+                return left + right
+            elif op == '-':
+                return left - right
+            elif op == '*':
+                return left * right
+            elif op == '/':
+                return left / right
+
+        raise TypeError(f'Unsupported expression: {expr}')
 
     def execute(self, stmt):
         var_type = stmt['type']
         name = stmt['name']
-        value = stmt['value']
+        value = self.evaluate(stmt['value'])
         is_const = stmt['const']
 
         # Type check
         if var_type == 'int':
-            if not value.isdigit():
+            if not isinstance(value, int):
                 raise TypeError(f"Expected int for '{name}', got {value}")
-            value = int(value)
-
         elif var_type == 'string':
-            if not (value.startswith("'") and value.endswith("'")):
+            if not isinstance(value, str):
                 raise TypeError(f"Expected string for '{name}', got {value}")
-            value = value[1:-1]  # حذف کوتیشن‌ها
-
         elif var_type == 'bool':
-             if not isinstance(value, bool):
+            if not isinstance(value, bool):
                 raise TypeError(f"Expected bool for '{name}', got {value}")
 
         # ذخیره متغیر

@@ -5,3 +5,4 @@ bool isActive = false;
 emit 'debug test';
 emit name;
 emit age;
+emit 6 / 3;
