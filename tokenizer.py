@@ -2,39 +2,41 @@
 
 import re
 
-token_spec = [
-    ('TYPE',    r'\b(int|string|bool|array|object)\b'),
-    ('BOOLEAN', r'\b(true|false)\b'),
-    ('AS',      r'\bas\b'),
-    ('CONST',   r'\bconst\b'),
-    ('EMIT',     r'\bemit\b'),
-    ('PLUS',     r'\+'),
-    ('MINUS',    r'-'),
-    ('STAR',     r'\*'),
-    ('SLASH',    r'/'),
-    ('IDENT',   r'[a-zA-Z_][a-zA-Z0-9_]*'),
-    ('STRING',  r"'[^']*'"),
-    ('NUMBER',  r'\b\d+\b'),
-    ('EQUALS',  r'='),
-    ('SEMICOLON', r';'),
-    ('SKIP',    r'[ \t]+'),
-    ('MISMATCH',r'.'),
-]
-
-token_regex = '|'.join(f'(?P<{name}>{pattern})' for name, pattern in token_spec)
-
 def tokenize(code):
+    token_specification = [
+        ('TEMPLATE', r'`[^`]*`'),
+        ('STRING',   r"'[^']*'"),
+        ('NUMBER',   r'\d+'),
+        ('BOOLEAN',  r'\btrue\b|\bfalse\b'),
+        ('TYPE',     r'\bstring\b|\bint\b|\bbool\b'),
+        ('CONST',    r'\bconst\b'),
+        ('AS',       r'\bas\b'),
+        ('EMIT',     r'\bemit\b'),
+        ('IDENT',    r'[a-zA-Z_][a-zA-Z0-9_]*'),
+        ('EQUALS',   r'='),
+        ('PLUS',     r'\+'),
+        ('MINUS',    r'-'),
+        ('STAR',     r'\*'),
+        ('SLASH',    r'/'),
+        ('SEMICOLON',r';'),
+        ('SKIP',     r'[ \t\n]+'),
+        ('MISMATCH', r'.'),
+    ]
+    tok_regex = '|'.join(f'(?P<{name}>{pattern})' for name, pattern in token_specification)
+    get_token = re.compile(tok_regex).match
+    pos = 0
+    mo = get_token(code, pos)
     tokens = []
-    for match in re.finditer(token_regex, code):
-        kind = match.lastgroup
-        value = match.group()
+    while mo:
+        kind = mo.lastgroup
+        value = mo.group()
         if kind == 'SKIP':
-            continue
+            pass
         elif kind == 'MISMATCH':
-            raise SyntaxError(f'Unexpected character {value!r}')
-        elif kind == 'BOOLEAN':
-            value = True if value == 'true' else False
-            tokens.append((kind, value))
+            raise RuntimeError(f'Unexpected character: {value!r}')
         else:
             tokens.append((kind, value))
+        pos = mo.end()
+        mo = get_token(code, pos)
+    tokens.append(('EOF', ''))
     return tokens

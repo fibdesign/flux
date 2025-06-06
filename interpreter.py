@@ -1,3 +1,5 @@
+import re
+
 class Interpreter:
     def __init__(self, ast):
         self.ast = ast
@@ -11,14 +13,23 @@ class Interpreter:
                 self.execute(statement)
 
     def execute_emit(self, stmt):
-        val = self.evaluate(stmt['value'])
-        print(val)
+        val_type, val = stmt['value']
+        value = self.evaluate((val_type, val))
+        print(value)
 
     def evaluate(self, expr):
-        if isinstance(expr, tuple):  # مقدار ساده
+        if isinstance(expr, tuple):
             kind, val = expr
             if kind == 'STRING':
                 return val[1:-1]
+            elif kind == 'TEMPLATE':
+                content = val[1:-1]  # remove backticks
+                def replacer(match):
+                    var_name = match.group(1)
+                    if var_name not in self.environment:
+                        raise NameError(f'Variable {var_name} not defined')
+                    return str(self.environment[var_name]['value'])
+                return re.sub(r'\{\{(.+?)\}\}', replacer, content)
             elif kind == 'NUMBER':
                 return int(val)
             elif kind == 'BOOLEAN':
@@ -32,8 +43,6 @@ class Interpreter:
             left = self.evaluate(expr['left'])
             right = self.evaluate(expr['right'])
             op = expr['operator']
-
-            # Type-safe operations
             if op == '+':
                 return left + right
             elif op == '-':
@@ -51,18 +60,6 @@ class Interpreter:
         value = self.evaluate(stmt['value'])
         is_const = stmt['const']
 
-        # Type check
-        if var_type == 'int':
-            if not isinstance(value, int):
-                raise TypeError(f"Expected int for '{name}', got {value}")
-        elif var_type == 'string':
-            if not isinstance(value, str):
-                raise TypeError(f"Expected string for '{name}', got {value}")
-        elif var_type == 'bool':
-            if not isinstance(value, bool):
-                raise TypeError(f"Expected bool for '{name}', got {value}")
-
-        # ذخیره متغیر
         if name in self.environment and self.environment[name]['const']:
             raise ValueError(f"Cannot reassign constant variable '{name}'")
 
@@ -71,6 +68,3 @@ class Interpreter:
             'value': value,
             'const': is_const
         }
-
-    def dump(self):
-        return self.environment

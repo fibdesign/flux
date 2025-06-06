@@ -1,3 +1,7 @@
+# parser.py
+
+from tokenizer import tokenize
+
 from tokenizer import tokenize
 
 class Parser:
@@ -28,17 +32,16 @@ class Parser:
 
     def parse_expression(self):
         left_type, left_value = self.current()
-        if left_type not in ('STRING', 'NUMBER', 'BOOLEAN', 'IDENT'):
+        if left_type not in ('STRING', 'TEMPLATE', 'NUMBER', 'BOOLEAN', 'IDENT'):
             raise SyntaxError(f'Unexpected value {left_type}')
         self.position += 1
 
         if self.current()[0] in ('PLUS', 'MINUS', 'STAR', 'SLASH'):
             op_type = self.eat(self.current()[0])
             right_type, right_value = self.current()
-            if right_type not in ('STRING', 'NUMBER', 'BOOLEAN', 'IDENT'):
+            if right_type not in ('STRING', 'TEMPLATE', 'NUMBER', 'BOOLEAN', 'IDENT'):
                 raise SyntaxError(f'Expected value after operator, got {right_type}')
             self.position += 1
-
             return {
                 'type': 'binary_expression',
                 'operator': op_type,
@@ -50,41 +53,30 @@ class Parser:
 
     def parse_emit(self):
         self.eat('EMIT')
-        value = self.parse_expression()
+        value_type, value = self.current()
+        if value_type not in ('STRING', 'TEMPLATE', 'IDENT'):
+            raise SyntaxError(f'Expected STRING, TEMPLATE, or IDENT after emit, got {value_type}')
+        self.position += 1
         self.eat('SEMICOLON')
         return {
             'kind': 'emit',
-            'value': value
+            'value': (value_type, value)
         }
 
     def parse_statement(self):
         var_type = self.eat('TYPE')
         var_name = self.eat('IDENT')
         self.eat('EQUALS')
-        value_expr = self.parse_expression()
-
-        # Validate type for simple expressions
-        if isinstance(value_expr, tuple):
-            value_type, _ = value_expr
-            if value_type not in ('STRING', 'NUMBER', 'BOOLEAN', 'IDENT'):
-                raise SyntaxError(f'Expected STRING or NUMBER or BOOLEAN, got {value_type}')
-        elif isinstance(value_expr, dict):
-            if value_expr.get('type') != 'binary_expression':
-                raise SyntaxError(f'Invalid expression: {value_expr}')
-        else:
-            raise SyntaxError(f'Invalid expression format: {value_expr}')
-
+        value = self.parse_expression()
         is_const = False
         if self.current()[0] == 'AS':
             self.eat('AS')
             self.eat('CONST')
             is_const = True
-
         self.eat('SEMICOLON')
-
         return {
             'type': var_type,
             'name': var_name,
-            'value': value_expr,
+            'value': value,
             'const': is_const
         }
