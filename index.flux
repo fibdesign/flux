@@ -1,10 +1,14 @@
-string name = 'bluebird' as const;
-int age = 24;
-bool isActive = false;
-string title = `my age is {{age}} and my name is {{name}}`;
+fn add(x: int, y: int) => int {
+  return x + y;
+}
+
+fn geet(name:string) => string {
+  return name;
+}
 
 
-emit 'debug test';
-emit name;
-emit age;
-emit title;
+fn boot() => void {
+  int sum = add(5, 6);
+  emit sum;
+  geet('bluebird');
+}

@@ -1,24 +1,33 @@
 // tokenizer.js
 
 export function tokenize(code) {
-    const tokenSpecification = [
-        ['TEMPLATE', /`[^`]*`/y],
-        ['STRING', /'[^']*'/y],
-        ['NUMBER', /\d+/y],
-        ['BOOLEAN', /\btrue\b|\bfalse\b/y],
-        ['TYPE', /\bstring\b|\bint\b|\bbool\b/y],
-        ['CONST', /\bconst\b/y],
-        ['AS', /\bas\b/y],
-        ['EMIT', /\bemit\b/y],
-        ['IDENT', /[a-zA-Z_][a-zA-Z0-9_]*/y],
-        ['EQUALS', /=/y],
-        ['PLUS', /\+/y],
-        ['MINUS', /-/y],
-        ['STAR', /\*/y],
-        ['SLASH', /\//y],
-        ['SEMICOLON', /;/y],
-        ['SKIP', /[ \t\r\n]+/y],
-        ['MISMATCH', /./y]
+    const tokenSpec = [
+        ['TEMPLATE', /`[^`]*`/],
+        ['STRING', /'[^']*'/],
+        ['NUMBER', /\d+/],
+        ['BOOLEAN', /\btrue\b|\bfalse\b/],
+        ['TYPE', /\bstring\b|\bint\b|\bbool\b|\bvoid\b/],
+        ['FN', /\bfn\b/],
+        ['RETURN', /\breturn\b/],
+        ['CONST', /\bconst\b/],
+        ['AS', /\bas\b/],
+        ['EMIT', /\bemit\b/],
+        ['IDENT', /[a-zA-Z_][a-zA-Z0-9_]*/],
+        ['ARROW', /=>/],
+        ['EQUALS', /=/],
+        ['PLUS', /\+/],
+        ['MINUS', /-/],
+        ['STAR', /\*/],
+        ['SLASH', /\//],
+        ['SEMICOLON', /;/],
+        ['COLON', /:/],
+        ['COMMA', /,/],
+        ['LPAREN', /\(/],
+        ['RPAREN', /\)/],
+        ['LBRACE', /\{/],
+        ['RBRACE', /\}/],
+        ['SKIP', /[ \t\r\n]+/],
+        ['MISMATCH', /./],
     ];
 
     const tokens = [];
@@ -26,26 +35,30 @@ export function tokenize(code) {
 
     while (pos < code.length) {
         let match = null;
-        for (const [name, regex] of tokenSpecification) {
-            regex.lastIndex = pos;
-            match = regex.exec(code);
-            if (match && match.index === pos) {
-                const value = match[0];
-                if (name === 'SKIP') {
-                    // skip whitespace
-                } else if (name === 'MISMATCH') {
-                    throw new Error(`Unexpected character: '${value}' at position ${pos}`);
+
+        for (const [type, regex] of tokenSpec) {
+            regex.lastIndex = 0;
+            const result = regex.exec(code.slice(pos));
+            if (result && result.index === 0) {
+                const value = result[0];
+                if (type === 'SKIP') {
+                    // do nothing
+                } else if (type === 'MISMATCH') {
+                    throw new Error(`Unexpected token at position ${pos}`);
                 } else {
-                    tokens.push([name, value]);
+                    tokens.push([type, value]);
                 }
                 pos += value.length;
+                match = true;
                 break;
             }
         }
+
         if (!match) {
             throw new Error(`Unexpected token at position ${pos}`);
         }
     }
+
     tokens.push(['EOF', '']);
     return tokens;
 }
