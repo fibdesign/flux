@@ -79,19 +79,32 @@ export class Interpreter {
 
     execute(stmt, env) {
         if (stmt.kind === 'emit') {
-            // ... existing emit handling ...
+            // Restore the original emit functionality
+            console.log(this.evaluate(stmt.value, env));
         } else if (stmt.kind === 'var_declaration') {
-            // ... existing variable handling ...
+            const value = this.evaluate(stmt.value, env);
+            const actualType = getTypeName(value);
+            if (actualType !== stmt.type) {
+                throw new TypeError(`Type mismatch: expected ${stmt.type}, got ${actualType}`);
+            }
+
+            if (env[stmt.name] && env[stmt.name].const) {
+                throw new Error(`Cannot reassign constant '${stmt.name}'`);
+            }
+
+            env[stmt.name] = {
+                type: stmt.type,
+                value,
+                const: stmt.const
+            };
         } else if (stmt.kind === 'expression_statement') {
-            // ... existing expression handling ...
+            this.evaluate(stmt.expression, env);
         } else if (stmt.kind === 'return') {
-            // ... existing return handling ...
-        }
-        // Add this to ignore router statements during execution
-        else if (stmt.kind === 'router') {
+            const value = this.evaluate(stmt.value, env);
+            throw { return: value };
+        } else if (stmt.kind === 'router') {
             // Do nothing - processed separately in processRouters()
-        }
-        else {
+        } else {
             throw new Error('Unknown statement kind: ' + stmt.kind);
         }
     }
