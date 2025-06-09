@@ -3,13 +3,12 @@
   "version": "0.0.1",
   "main": "core/flux.js",
   "type": "module",
-  "scripts": {
-    "run": "node core/flux-cli.js run",
-    "version": "node core/flux-cli.js run"
+  "bin": {
+    "flux": "./bin/flux.js"
   },
-  "private": true,
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "scripts": {
+    "run": "npx flux run",
+    "version": "npx flux version"
+  },
+  "private": true
 }
