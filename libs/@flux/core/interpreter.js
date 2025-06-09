@@ -104,6 +104,22 @@ export class Interpreter {
             throw { return: value };
         } else if (stmt.kind === 'router') {
             // Do nothing - processed separately in processRouters()
+        }else if (stmt.kind === 'assignment') {
+            // Handle assignment statement
+            if (!(stmt.name in env)) {
+                throw new Error(`Variable '${stmt.name}' not defined`);
+            }
+            if (env[stmt.name].const) {
+                throw new Error(`Cannot reassign constant '${stmt.name}'`);
+            }
+
+            const value = this.evaluate(stmt.expression, env);
+            const actualType = getTypeName(value);
+            if (actualType !== env[stmt.name].type) {
+                throw new TypeError(`Type mismatch for '${stmt.name}': expected ${env[stmt.name].type}, got ${actualType}`);
+            }
+
+            env[stmt.name].value = value;
         } else {
             throw new Error('Unknown statement kind: ' + stmt.kind);
         }

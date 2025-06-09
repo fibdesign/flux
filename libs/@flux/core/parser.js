@@ -177,16 +177,38 @@ export class Parser {
             return this.parseEmit();
         } else if (this.current()[0] === 'TYPE') {
             return this.parseVarDeclaration();
+        } else if (this.current()[0] === 'IDENT') {
+            // Check if this is an assignment statement
+            const name = this.eat('IDENT');
+            if (this.current()[0] === 'EQUALS') {
+                return this.parseAssignment(name);
+            }
+            // If not assignment, put the token back and parse as expression
+            this.position--;
+            return this.parseExpressionStatement();
         } else {
-            const expr = this.parseExpression();
-            this.eat('SEMICOLON');
-            return {
-                kind: 'expression_statement',
-                expression: expr
-            };
+            return this.parseExpressionStatement();
         }
     }
+    parseAssignment(name) {
+        this.eat('EQUALS');
+        const expr = this.parseExpression();
+        this.eat('SEMICOLON');
+        return {
+            kind: 'assignment',
+            name,
+            expression: expr
+        };
+    }
 
+    parseExpressionStatement() {
+        const expr = this.parseExpression();
+        this.eat('SEMICOLON');
+        return {
+            kind: 'expression_statement',
+            expression: expr
+        };
+    }
     parseVarDeclaration() {
         const varType = this.eat('TYPE');
         const varName = this.eat('IDENT');
