@@ -5,8 +5,7 @@ import path from 'node:path';
 
 const projectRoot = process.env.FLUX_PROJECT_ROOT || path.resolve('.');
 
-// index.flux is always in project root
-const codePath = path.resolve(projectRoot, 'index.flux');
+const codePath = path.resolve(projectRoot, 'boot.flux');
 const code = readFileSync(codePath, 'utf-8');
 
 import { tokenize } from './tokenizer.js';
