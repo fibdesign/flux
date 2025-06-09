@@ -1,16 +1,17 @@
-// flux.js
+// compiler/flux.js
 
 import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+
+const projectRoot = process.env.FLUX_PROJECT_ROOT || path.resolve('.');
+
+// index.flux is always in project root
+const codePath = path.resolve(projectRoot, 'index.flux');
+const code = readFileSync(codePath, 'utf-8');
+
 import { tokenize } from './tokenizer.js';
 import { Parser } from './parser.js';
 import { Interpreter } from './interpreter.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const code = readFileSync(resolve(__dirname, '../index.flux'), 'utf-8');
 
 const tokens = tokenize(code);
 const parser = new Parser(tokens);
@@ -18,3 +19,5 @@ const ast = parser.parse();
 
 const interpreter = new Interpreter(ast);
 interpreter.run();
+
+console.log('✅  Execution finished.');

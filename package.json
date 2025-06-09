@@ -4,7 +4,7 @@
   "main": "compiler/flux.js",
   "type": "module",
   "scripts": {
-    "run": "node compiler/flux.js"
+    "run": "flux run"
   },
   "private": true,
   "keywords": [],
