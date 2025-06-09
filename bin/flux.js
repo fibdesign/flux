@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-import '../core/flux-cli.js';
+import '../libs/@flux/core/flux-cli.js';
