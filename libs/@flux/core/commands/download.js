@@ -1,7 +1,7 @@
-import { promises as fs } from 'fs';
-import { join } from 'path';
-import { spawnSync } from 'child_process';
-import { logSuccess, logInfo, logWarning, logError } from '../utils/logger.js';
+import {promises as fs} from 'fs';
+import {join} from 'path';
+import {spawnSync} from 'child_process';
+import {logError, logSpinner, logSuccess, logWarning} from '../utils/logger.js';
 
 function runGit(args, cwd) {
     const result = spawnSync('git', args, { cwd, encoding: 'utf-8' });
@@ -40,13 +40,12 @@ export async function downloadCommand() {
             const localPath = join(projectRoot, 'libs', ...libName.split('/'));
             const alreadyCloned = await fs.stat(localPath).then(() => true).catch(() => false);
 
+            console.log(`📦  ${libName}`);
             if (!alreadyCloned) {
-                console.log(`📦 ${libName}`);
-                console.log(`  └─ Cloning repo...`);
+                logSpinner(`  └─ Cloning repo...`);
                 runGit(['clone', '--no-checkout', repoUrl, localPath]);
             } else {
-                console.log(`📦 ${libName}`);
-                console.log(`  └─ Fetching tags...`);
+                logSpinner(`  └─ Fetching tags...`);
                 runGit(['fetch', '--tags'], localPath);
             }
 
@@ -55,10 +54,9 @@ export async function downloadCommand() {
                 runGit(['fetch', '--tags'], localPath);
                 if (!gitTagExists(ref, localPath)) {
                     const allTags = spawnSync('git', ['tag'], { encoding: 'utf-8', cwd: localPath });
-                    const tags = allTags.stdout
-                        .trim()
-                        .split('\n')
-                        .map(tag => `  ├─ ${tag}`)
+                    const allTagsList = allTags.stdout.trim().split('\n');
+                    const tags = allTagsList
+                        .map((tag, index) => `  ${index + 1 === allTagsList.length ? '└─' : '├─'} ${tag}`)
                         .join('\n');
 
                     throw new Error(`Release tag '${ref}' not found in repo ${repoUrl} for ${libName}\nAvailable tags:\n${tags}`);
