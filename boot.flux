@@ -1,13 +1,22 @@
-fn add(x: int, y: int) => int {
-  return x + y;
+fn geet(name: string) => void {
+    emit name;
+}
+fn getUsers() => string {return 'this is users list example';}
+fn getPosts() => string {return 'this is post list example';}
+
+
+fn auth() => bool { return true; }
+router '/users' => [auth] {
+    GET '/' => getUsers,
+    POST '/create' => getUsers
 }
 
-fn geet(name:string) => void {
-  emit name;
+router '/posts' => {
+    GET '/' => getPosts,
+    POST '/create' => getPosts
 }
+
 
 fn boot() => void {
-  int sum = add(5, 6);
-  emit sum;
   geet('bluebird');
 }

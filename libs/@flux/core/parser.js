@@ -24,7 +24,9 @@ export class Parser {
 
     parse() {
         while (this.current()[0] !== 'EOF') {
-            if (this.current()[0] === 'FN') {
+            if (this.current()[0] === 'ROUTER') {
+                this.ast.push(this.parseRouter());
+            }else if (this.current()[0] === 'FN') {
                 this.ast.push(this.parseFunction());
             } else if (this.current()[0] === 'EMIT') {
                 this.ast.push(this.parseEmit());
@@ -33,6 +35,74 @@ export class Parser {
             }
         }
         return this.ast;
+    }
+
+    parseRouter() {
+        this.eat('ROUTER');
+        const basePath = this.eat('STRING');
+
+        let baseMiddlewares = [];
+        // Check if arrow is present (optional middleware array)
+        if (this.current()[0] === 'ARROW') {
+            this.eat('ARROW');
+
+            // Check if bracket follows (middlewares present)
+            if (this.current()[0] === 'LBRACKET') {
+                this.eat('LBRACKET');
+                while (this.current()[0] !== 'RBRACKET') {
+                    baseMiddlewares.push(this.eat('IDENT'));
+                    if (this.current()[0] === 'COMMA') this.eat('COMMA');
+                    else break;
+                }
+                this.eat('RBRACKET');
+            }
+            // Else: => without [] means no middlewares
+        }
+
+        this.eat('LBRACE');
+        const routes = [];
+
+        while (this.current()[0] !== 'RBRACE') {
+            if (this.current()[0] === 'ROUTER') {
+                routes.push(this.parseRouter());
+            } else {
+                const method = this.eat('METHOD');
+                const path = this.eat('STRING');
+                this.eat('ARROW');
+
+                let routeMiddlewares = [];
+                // Optional middleware array for routes
+                if (this.current()[0] === 'LBRACKET') {
+                    this.eat('LBRACKET');
+                    while (this.current()[0] !== 'RBRACKET') {
+                        routeMiddlewares.push(this.eat('IDENT'));
+                        if (this.current()[0] === 'COMMA') this.eat('COMMA');
+                        else break;
+                    }
+                    this.eat('RBRACKET');
+                }
+
+                const handler = this.eat('IDENT');
+                if (this.current()[0] === 'COMMA') this.eat('COMMA');
+
+                routes.push({
+                    kind: 'route',
+                    method,
+                    path: path.slice(1, -1),
+                    middlewares: routeMiddlewares,
+                    handler
+                });
+            }
+        }
+
+        this.eat('RBRACE');
+
+        return {
+            kind: 'router',
+            basePath: basePath.slice(1, -1),
+            baseMiddlewares,
+            routes
+        };
     }
 
     parseFunction() {

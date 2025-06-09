@@ -2,6 +2,10 @@
 
 export function tokenize(code) {
     const tokenSpec = [
+        ['ROUTER', /\brouter\b/],
+        ['METHOD', /\b(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b/],
+        ['LBRACKET', /\[/],
+        ['RBRACKET', /\]/],
         ['TEMPLATE', /`[^`]*`/],
         ['STRING', /'[^']*'/],
         ['NUMBER', /\d+/],
@@ -12,7 +16,6 @@ export function tokenize(code) {
         ['CONST', /\bconst\b/],
         ['AS', /\bas\b/],
         ['EMIT', /\bemit\b/],
-        ['IDENT', /[a-zA-Z_][a-zA-Z0-9_]*/],
         ['ARROW', /=>/],
         ['EQUALS', /=/],
         ['PLUS', /\+/],
@@ -26,6 +29,7 @@ export function tokenize(code) {
         ['RPAREN', /\)/],
         ['LBRACE', /\{/],
         ['RBRACE', /\}/],
+        ['IDENT', /[a-zA-Z_][a-zA-Z0-9_]*/],
         ['SKIP', /[ \t\r\n]+/],
         ['MISMATCH', /./],
     ];
