@@ -31,7 +31,7 @@ export class Interpreter {
         }
 
         this.callFunction('boot', [], {});
-        console.log('✅ Execution finished.');
+        console.log('✅  Execution finished.');
     }
 
     execute(stmt, env) {

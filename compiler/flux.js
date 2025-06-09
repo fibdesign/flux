@@ -19,5 +19,3 @@ const ast = parser.parse();
 
 const interpreter = new Interpreter(ast);
 interpreter.run();
-
-console.log('✅  Execution finished.');

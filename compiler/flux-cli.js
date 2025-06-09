@@ -1,31 +1,28 @@
 #!/usr/bin/env node
 
-import { spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-// Get the directory of the current file (compiler folder)
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
+import {runCommand} from "./commands/run.js";
+import {serveCommand} from "./commands/serve.js";
+import {versionCommand} from "./commands/version.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
 const commandArgs = args.slice(1);
 
-const projectRoot = process.cwd();
-const compilerPath = resolve(__dirname, 'flux.js');  // Correctly resolved path
+const commandDefinitions = [
+    { names: ['run'], action: runCommand },
+    { names: ['serve'], action: serveCommand },
+    { names: ['version', '-version', '-v'], action: versionCommand },
+];
 
-switch (command) {
-    case 'run':
-        spawnSync('node', [compilerPath, ...commandArgs], {
-            stdio: 'inherit',
-            env: { ...process.env, FLUX_PROJECT_ROOT: projectRoot }
-        });
-        break;
+const commands = {};
+for (const cmd of commandDefinitions) {
+    for (const name of cmd.names) {
+        commands[name] = cmd.action;
+    }
+}
 
-    case 'serve':
-        console.log('🚧 Serve command is not implemented yet');
-        break;
-
-    default:
-        console.log('Usage: flux <run|serve>');
+if (command && commands[command]) {
+    commands[command](commandArgs);
+} else {
+    console.log('Usage: flux <run|serve|version>');
 }
