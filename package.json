@@ -1,10 +1,10 @@
 {
   "name": "test",
   "version": "1.0.0",
-  "main": "flux.js",
+  "main": "compiler/flux.js",
   "type": "module",
   "scripts": {
-    "run": "node flux.js"
+    "run": "node compiler/flux.js"
   },
   "private": true,
   "keywords": [],
