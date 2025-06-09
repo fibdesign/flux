@@ -8,7 +8,8 @@
   },
   "scripts": {
     "run": "npx flux run",
-    "version": "npx flux version"
+    "version": "npx flux version",
+    "download": "npx flux download"
   },
   "private": true
 }

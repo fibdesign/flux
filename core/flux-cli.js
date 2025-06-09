@@ -3,6 +3,7 @@
 import {runCommand} from "./commands/run.js";
 import {serveCommand} from "./commands/serve.js";
 import {versionCommand} from "./commands/version.js";
+import {downloadCommand} from "./commands/download.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -12,6 +13,7 @@ const commandDefinitions = [
     { names: ['run'], action: runCommand },
     { names: ['serve'], action: serveCommand },
     { names: ['version', '-version', '-v'], action: versionCommand },
+    { names: ['download'], action: downloadCommand },  // NEW
 ];
 
 const commands = {};
