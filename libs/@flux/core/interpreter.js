@@ -2,6 +2,7 @@
 
 import { getTypeName } from './types.js'; // We'll define this helper
 import readline from 'readline';
+import {HTTPServer} from "./utils/http.js";
 
 export class Interpreter {
     constructor(ast) {
@@ -66,20 +67,31 @@ export class Interpreter {
         };
 
         console.log('\n🌐 Registered Routes:');
+        const finalRoutes = [];
         for (const router of this.routers) {
             const routes = flattenRoutes(router);
             for (const route of routes) {
-                console.log(
-                    `${route.method.padEnd(6)} ${route.path.padEnd(20)} -> ${route.handler}` +
-                    (route.middlewares.length ? ` [${route.middlewares.join(', ')}]` : '')
-                );
+                finalRoutes.push({
+                    method: route.method,
+                    path: route.path.replace(/(?<!^)\/+$/, ''),
+                    handler: route.handler,
+                    middlewares: route.middlewares
+                });
             }
         }
+        this.routers = finalRoutes;
+        this.routers.forEach(route => {
+            console.log(
+                `${route.method.padEnd(6)} ${route.path.padEnd(20)} -> ${route.handler}` +
+                (route.middlewares.length ? ` [${route.middlewares.join(', ')}]` : '')
+            );
+        })
+        const server = new HTTPServer(this);
+        server.listen(3000);
     }
 
     execute(stmt, env) {
         if (stmt.kind === 'emit') {
-            // Restore the original emit functionality
             console.log(this.evaluate(stmt.value, env));
         } else if (stmt.kind === 'var_declaration') {
             const value = this.evaluate(stmt.value, env);

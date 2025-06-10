@@ -1,21 +1,26 @@
 fn geet(name: string) => void {
     emit name;
 }
-fn getUsers() => string {return 'this is users list example';}
-fn getPosts() => string {return 'this is post list example';}
 
+fn auth(req:string) => bool {
+    return true;
+}
+fn getUser(req:string) => string {
+    return `this User: {{req}}`;
+}
 
-fn auth() => bool { return true; }
+fn homeView(req:string) => string {
+    return `User`;
+}
+
+router '/' =>  {
+    GET '/' => homeView,
+}
+
 router '/users' => [auth] {
-    GET '/' => getUsers,
-    POST '/create' => getUsers
+    GET '/' => getUser,
+    POST '/hi' => getUser,
 }
-
-router '/posts' => {
-    GET '/' => getPosts,
-    POST '/create' => getPosts
-}
-
 
 fn boot() => void {
   geet('bluebird');
