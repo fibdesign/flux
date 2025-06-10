@@ -135,7 +135,23 @@ export class Interpreter {
             throw new Error('Unknown statement kind: ' + stmt.kind);
         }
     }
+    serializeValue(value) {
+        if (value === null) return 'null';
+        if (value === undefined) return 'undefined';
 
+        if (typeof value === 'object') {
+            try {
+                return JSON.stringify(value, (key, val) => {
+                    if (typeof val === 'function') return '[Function]';
+                    return val;
+                }, 2);
+            } catch (e) {
+                return '[Object]';
+            }
+        }
+
+        return String(value);
+    }
     evaluate(expr, env) {
         if (Array.isArray(expr)) {
             const [kind, val] = expr;
@@ -150,7 +166,8 @@ export class Interpreter {
                         }
                         const parser = new Parser(tokens);
                         const parsedExpr = parser.parseExpression();
-                        return this.evaluate(parsedExpr, env);
+                        const value = this.evaluate(parsedExpr, env);
+                        return this.serializeValue(value);
                     } catch (error) {
                         console.error(`Error in template expression '{{${expr}}}':`, error);
                         return `[ERROR: ${error.message}]`;

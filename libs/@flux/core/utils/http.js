@@ -8,14 +8,21 @@ import { fileURLToPath } from 'node:url';
 import {showUpPage} from "./fluxUpView.js";
 
 function wrapRequest(rawReq) {
-    return {
+    const reqObj = {
         __fluxType: 'fluxReq',
         method: rawReq.method,
         url: rawReq.url,
         headers: rawReq.headers,
-        query: {},   // you can parse query if needed
-        params: {},  // set during route matching
+        queries: {},
+        params: {},
     };
+
+    const url = new URL(rawReq.url, `http://${rawReq.headers.host}`);
+    for (const [key, value] of url.searchParams.entries()) {
+        reqObj.queries[key] = value;
+    }
+
+    return reqObj;
 }
 
 export class HTTPServer {
@@ -30,7 +37,7 @@ export class HTTPServer {
             url: req.url,
             method: req.method,
             headers: req.headers,
-            query: {},
+            queries: {},
             params: {}
         };
 
