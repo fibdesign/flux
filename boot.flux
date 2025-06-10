@@ -6,7 +6,7 @@ fn auth(req:fluxReq) => bool {
     return true;
 }
 fn getUser(req:fluxReq) => string {
-    return `this User: {{req}}`;
+    return `this is request: {{req.params.id}}`;
 }
 
 fn homeView(req:fluxReq) => string {

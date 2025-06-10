@@ -7,14 +7,14 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {showUpPage} from "./fluxUpView.js";
 
-function wrapRequest(rawReq) {
+function wrapRequest(rawReq, params = {}) {
     const reqObj = {
         __fluxType: 'fluxReq',
         method: rawReq.method,
         url: rawReq.url,
         headers: rawReq.headers,
         queries: {},
-        params: {},
+        params: params,
     };
 
     const url = new URL(rawReq.url, `http://${rawReq.headers.host}`);
@@ -23,6 +23,22 @@ function wrapRequest(rawReq) {
     }
 
     return reqObj;
+}
+function parseRouteParams(routePath, requestPath) {
+    const params = {};
+    const routeParts = routePath.split('/').filter(Boolean);
+    const pathParts = requestPath.split('/').filter(Boolean);
+
+    if (routeParts.length !== pathParts.length) return {};
+
+    for (let i = 0; i < routeParts.length; i++) {
+        if (routeParts[i].startsWith('#')) {
+            const paramName = routeParts[i].substring(1);
+            params[paramName] = decodeURIComponent(pathParts[i]);
+        }
+    }
+
+    return params;
 }
 
 export class HTTPServer {
@@ -74,7 +90,7 @@ export class HTTPServer {
                 const match = this.matchRoute(route, req);
                 if (match) {
                     const reqWrapped = wrapRequest(req);
-                    fluxReq.params = match.params || {};
+                    reqWrapped.params = match.params || {};
                     this.executeRoute(route, reqWrapped, fluxRes);
                     matched = true;
                     break;
@@ -95,23 +111,25 @@ export class HTTPServer {
     matchRoute(route, req) {
         if (req.method !== route.method) return false;
 
+        const requestPath = new URL(req.url, `http://${req.headers.host}`).pathname;
         const routeParts = route.path.split('/').filter(Boolean);
-        const urlParts = new URL(req.url, `http://${req.headers.host}`).pathname.split('/').filter(Boolean);
+        const pathParts = requestPath.split('/').filter(Boolean);
 
-        if (routeParts.length !== urlParts.length) return false;
-
-        const params = {};
+        if (routeParts.length !== pathParts.length) return false;
 
         for (let i = 0; i < routeParts.length; i++) {
             if (routeParts[i].startsWith('#')) {
-                const paramName = routeParts[i].slice(1);
-                params[paramName] = urlParts[i];
-            } else if (routeParts[i] !== urlParts[i]) {
+                // This is a parameter, skip value check
+                continue;
+            }
+            if (routeParts[i] !== pathParts[i]) {
                 return false;
             }
         }
 
-        return { params };
+        return {
+            params: parseRouteParams(route.path, requestPath)
+        };
     }
 
 
@@ -146,7 +164,7 @@ export class HTTPServer {
             const line = `${Dim}────────────────────────────────────────────${Reset}`;
 
             // Output
-            console.clear();
+            // console.clear();
             console.log(`${Green}🌐  Flux HTTP Server is Running${Reset}`);
             console.log(line);
             console.log(`  ➜  ${Bright}Local:${Reset}        ${Cyan}http://localhost:${port}${Reset}`);
