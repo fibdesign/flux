@@ -18,6 +18,7 @@ router '/' =>  {
 }
 
 router '/users' => [auth] {
+    POST '/' => getUser,
     GET '/#id' => getUser,
 }
 

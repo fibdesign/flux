@@ -113,7 +113,8 @@ export class HTTPServer {
         res.send(result);
     }
 
-    listen(port) {
+    listen() {
+        const port = 2351;
         this.server.listen(port, () => {
             // Load versions
             const projectRoot = process.cwd();
