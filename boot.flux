@@ -23,5 +23,5 @@ router '/users' => [auth] {
 }
 
 fn boot() => void {
-
+    #-- boot --#
 }

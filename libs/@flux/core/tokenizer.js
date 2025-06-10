@@ -2,6 +2,8 @@
 
 export function tokenize(code) {
     const tokenSpec = [
+        ['COMMENT', /#--[\s\S]*?--#/],
+        ['SKIP', /[ \t\r\n]+/],
         ['ROUTER', /\brouter\b/],
         ['METHOD', /\b(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b/],
         ['LBRACKET', /\[/],
@@ -30,7 +32,6 @@ export function tokenize(code) {
         ['LBRACE', /\{/],
         ['RBRACE', /\}/],
         ['IDENT', /[a-zA-Z_][a-zA-Z0-9_]*/],
-        ['SKIP', /[ \t\r\n]+/],
         ['MISMATCH', /./],
     ];
 
@@ -45,7 +46,7 @@ export function tokenize(code) {
             const result = regex.exec(code.slice(pos));
             if (result && result.index === 0) {
                 const value = result[0];
-                if (type === 'SKIP') {
+                if (type === 'SKIP' || type === 'COMMENT') {
                     // do nothing
                 } else if (type === 'MISMATCH') {
                     throw new Error(`Unexpected token at position ${pos}`);
