@@ -5,6 +5,7 @@ import {showFluxRoutes} from "./fluxRoutesView.js";
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {showUpPage} from "./fluxUpView.js";
 
 function wrapRequest(rawReq) {
     return {
@@ -54,6 +55,10 @@ export class HTTPServer {
             let matched = false;
             if (req.url === '/__flux__routes' && req.method === 'GET') {
                 showFluxRoutes(this.interpreter.routers, res)
+                return;
+            }
+            if (req.url === '/__flux__up' && req.method === 'GET') {
+                showUpPage(res)
                 return;
             }
             for (const route of this.routes) {
@@ -142,6 +147,9 @@ export class HTTPServer {
             console.log(`  ➜  ${Bright}Core:${Reset}         ${Magenta}${coreVersionJson.name} v${coreVersionJson.version}${Reset}`);
             console.log(`  ➜  ${Bright}Environment:${Reset}  ${Yellow}development${Reset}`);
             console.log(`  ➜  ${Bright}Interpreter:${Reset}  ${Blue}Node.js ${process.version}${Reset}`);
+            console.log(line);
+            console.log(`  ➜  ${Bright}Flux Page:${Reset}     ${Cyan}http://localhost:${port}/__flux__routes${Reset} ${Dim}(routes viewer)${Reset}`);
+            console.log(`  ➜  ${Bright}Flux Page:${Reset}     ${Cyan}http://localhost:${port}/__flux__up${Reset}     ${Dim}(status page)${Reset}`);
             console.log(line);
             console.log(`${Dim}Press Ctrl+C to stop the server${Reset}\n`);
         });
