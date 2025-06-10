@@ -88,7 +88,12 @@ export class Interpreter {
         } else if (stmt.kind === 'var_declaration') {
             const value = this.evaluate(stmt.value, env);
             const actualType = getTypeName(value);
-            if (actualType !== stmt.type) {
+            // Special handling for object type
+            if (stmt.type === 'object') {
+                if (actualType !== 'object') {
+                    throw new TypeError(`Type mismatch: expected object, got ${actualType}`);
+                }
+            } else if (actualType !== stmt.type) {
                 throw new TypeError(`Type mismatch: expected ${stmt.type}, got ${actualType}`);
             }
 
@@ -147,21 +152,48 @@ export class Interpreter {
             }
         }
 
-        if (expr.type === 'binary_expression') {
-            const left = this.evaluate(expr.left, env);
-            const right = this.evaluate(expr.right, env);
-            const op = expr.operator;
-            if (op === '+') return left + right;
-            if (op === '-') return left - right;
-            if (op === '*') return left * right;
-            if (op === '/') return left / right;
-        }
+        if (expr.type) {
+            switch (expr.type) {
+                case 'binary_expression':
+                    const left = this.evaluate(expr.left, env);
+                    const right = this.evaluate(expr.right, env);
+                    const op = expr.operator;
+                    if (op === '+') return left + right;
+                    if (op === '-') return left - right;
+                    if (op === '*') return left * right;
+                    if (op === '/') return left / right;
+                    break;
 
-        if (expr.type === 'function_call') {
-            const args = expr.args.map(arg => this.evaluate(arg, env));
-            return this.callFunction(expr.name, args, env);
-        }
+                case 'function_call':
+                    const args = expr.args.map(arg => this.evaluate(arg, env));
+                    return this.callFunction(expr.name, args, env);
 
+                case 'object_literal':
+                    const obj = {};
+                    for (const prop of expr.properties) {
+                        const key = prop.key; // Already an identifier string
+                        obj[key] = this.evaluate(prop.value, env);
+                    }
+                    return obj;
+
+                case 'member_expression':
+                    const object = this.evaluate(expr.object, env);
+                    const property = expr.property;
+
+                    if (typeof object !== 'object' || object === null) {
+                        throw new Error(`Cannot read property '${property}' of non-object`);
+                    }
+
+                    if (!(property in object)) {
+                        throw new Error(`Property '${property}' not found`);
+                    }
+
+                    return object[property];
+
+                default:
+                    throw new Error('Unknown expression type: ' + expr.type);
+            }
+        }
         throw new Error('Unknown expression type');
     }
 

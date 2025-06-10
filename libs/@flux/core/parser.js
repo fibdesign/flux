@@ -214,12 +214,14 @@ export class Parser {
         const varName = this.eat('IDENT');
         this.eat('EQUALS');
         const value = this.parseExpression();
+
         let isConst = false;
         if (this.current()[0] === 'AS') {
             this.eat('AS');
             this.eat('CONST');
             isConst = true;
         }
+
         this.eat('SEMICOLON');
         return {
             kind: 'var_declaration',
@@ -233,15 +235,27 @@ export class Parser {
     parseExpression() {
         let expr = this.parsePrimary();
 
-        while (['PLUS', 'MINUS', 'STAR', 'SLASH'].includes(this.current()[0])) {
-            const op = this.eat(this.current()[0]);
-            const right = this.parsePrimary();
-            expr = {
-                type: 'binary_expression',
-                operator: op,
-                left: expr,
-                right: right
-            };
+        while (true) {
+            if (this.current()[0] === 'DOT') {
+                this.eat('DOT');
+                const property = this.eat('IDENT');
+                expr = {
+                    type: 'member_expression',
+                    object: expr,
+                    property
+                };
+            } else if (['PLUS', 'MINUS', 'STAR', 'SLASH'].includes(this.current()[0])) {
+                const op = this.eat(this.current()[0]);
+                const right = this.parsePrimary();
+                expr = {
+                    type: 'binary_expression',
+                    operator: op,
+                    left: expr,
+                    right: right
+                };
+            } else {
+                break;
+            }
         }
 
         return expr;
@@ -250,9 +264,13 @@ export class Parser {
     parsePrimary() {
         const [type, value] = this.current();
 
-        if (['STRING', 'TEMPLATE', 'NUMBER', 'BOOLEAN'].includes(type)) {
+        if (['STRING', 'TEMPLATE', 'NUMBER', 'BOOLEAN', 'TYPE'].includes(type)) {
             this.position++;
             return [type, value];
+        }
+
+        if (type === 'LBRACE') {
+            return this.parseObjectLiteral();
         }
 
         if (type === 'IDENT') {
@@ -279,5 +297,29 @@ export class Parser {
         }
 
         throw new SyntaxError(`Unexpected expression start: ${type}`);
+    }
+    parseObjectLiteral() {
+        this.eat('LBRACE');
+        const properties = [];
+
+        while (this.current()[0] !== 'RBRACE') {
+            // Allow identifiers as keys without quotes
+            const key = this.eat('IDENT');
+            this.eat('COLON');
+            const value = this.parseExpression();
+            properties.push({ key, value });
+
+            if (this.current()[0] === 'COMMA') {
+                this.eat('COMMA');
+            } else {
+                break;
+            }
+        }
+
+        this.eat('RBRACE');
+        return {
+            type: 'object_literal',
+            properties
+        };
     }
 }
