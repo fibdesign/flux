@@ -35,7 +35,6 @@ export class Interpreter {
         }
 
         this.callFunction('boot', [], {});
-        console.log('✅  Execution finished.');
 
         // Step 4: process routers after boot
         this.processRouters();
@@ -66,7 +65,6 @@ export class Interpreter {
             return routes;
         };
 
-        console.log('\n🌐 Registered Routes:');
         const finalRoutes = [];
         for (const router of this.routers) {
             const routes = flattenRoutes(router);
@@ -80,14 +78,8 @@ export class Interpreter {
             }
         }
         this.routers = finalRoutes;
-        this.routers.forEach(route => {
-            console.log(
-                `${route.method.padEnd(6)} ${route.path.padEnd(20)} -> ${route.handler}` +
-                (route.middlewares.length ? ` [${route.middlewares.join(', ')}]` : '')
-            );
-        })
         const server = new HTTPServer(this);
-        server.listen(3000);
+        server.listen();
     }
 
     execute(stmt, env) {

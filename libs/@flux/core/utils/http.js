@@ -1,6 +1,10 @@
 // http.js
 
 import http from 'http';
+import {showFluxRoutes} from "./fluxRoutesView.js";
+import { readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 function wrapRequest(rawReq) {
     return {
@@ -47,9 +51,14 @@ export class HTTPServer {
                 res.statusCode = 500;
                 return res.end('Server configuration error: routes not properly initialized');
             }
-
             let matched = false;
+            if (req.url === '/__flux__routes' && req.method === 'GET') {
+                showFluxRoutes(this.interpreter.routers, res)
+                return;
+            }
             for (const route of this.routes) {
+
+
                 const match = this.matchRoute(route, req);
                 if (match) {
                     const reqWrapped = wrapRequest(req);
@@ -106,7 +115,36 @@ export class HTTPServer {
 
     listen(port) {
         this.server.listen(port, () => {
-            console.log(`🌐 Flux HTTP server running on port ${port} \n http://localhost:3000`);
+            // Load versions
+            const projectRoot = process.cwd();
+            const projectJson = JSON.parse(readFileSync(join(projectRoot, 'flux.json'), 'utf8'));
+            const coreVersionJson = JSON.parse(
+                readFileSync(resolve(projectRoot, 'libs/@flux/core/version.json'), 'utf8')
+            );
+
+            // Colors
+            const Reset = '\x1b[0m';
+            const Dim = '\x1b[2m';
+            const Bright = '\x1b[1m';
+            const Cyan = '\x1b[36m';
+            const Magenta = '\x1b[35m';
+            const Yellow = '\x1b[33m';
+            const Green = '\x1b[32m';
+            const Blue = '\x1b[34m';
+
+            const line = `${Dim}────────────────────────────────────────────${Reset}`;
+
+            // Output
+            console.clear();
+            console.log(`${Green}🌐  Flux HTTP Server is Running${Reset}`);
+            console.log(line);
+            console.log(`  ➜  ${Bright}Local:${Reset}        ${Cyan}http://localhost:${port}${Reset}`);
+            console.log(`  ➜  ${Bright}Project:${Reset}      ${Magenta}${projectJson.name} v${projectJson.version}${Reset}`);
+            console.log(`  ➜  ${Bright}Core:${Reset}         ${Magenta}${coreVersionJson.name} v${coreVersionJson.version}${Reset}`);
+            console.log(`  ➜  ${Bright}Environment:${Reset}  ${Yellow}development${Reset}`);
+            console.log(`  ➜  ${Bright}Interpreter:${Reset}  ${Blue}Node.js ${process.version}${Reset}`);
+            console.log(line);
+            console.log(`${Dim}Press Ctrl+C to stop the server${Reset}\n`);
         });
     }
 }

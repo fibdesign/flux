@@ -22,5 +22,5 @@ router '/users' => [auth] {
 }
 
 fn boot() => void {
-  geet('bluebird');
+
 }
