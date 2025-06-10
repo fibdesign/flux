@@ -233,6 +233,9 @@ export class Parser {
     }
 
     parseExpression() {
+        if (this.current()[0] === 'EOF') {
+            throw new SyntaxError('Unexpected end of expression');
+        }
         let expr = this.parsePrimary();
 
         while (true) {

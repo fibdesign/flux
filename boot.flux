@@ -10,9 +10,9 @@ fn getUser(req:fluxReq) => string {
 }
 
 fn homeView(req:fluxReq) => string {
-    object user = { name: 'sadegh'};
+    object user = { name: 'sadegh', id: 1};
     string name = user.name;
-    return `User: {{name}}`;
+    return `User: {{user}}`;
 }
 
 router '/' =>  {

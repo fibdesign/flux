@@ -3,6 +3,8 @@
 import { getTypeName } from './types.js'; // We'll define this helper
 import readline from 'readline';
 import {HTTPServer} from "./utils/http.js";
+import { tokenize } from './tokenizer.js';
+import { Parser } from './parser.js';
 
 export class Interpreter {
     constructor(ast) {
@@ -139,11 +141,23 @@ export class Interpreter {
             const [kind, val] = expr;
             if (kind === 'STRING') return val.slice(1, -1);
             if (kind === 'TEMPLATE') {
-                return val.slice(1, -1).replace(/\{\{(.+?)\}\}/g, (_, name) => {
-                    if (!(name in env)) throw new Error(`Variable '${name}' not found`);
-                    return env[name].value;
+                const template = val.slice(1, -1);
+                return template.replace(/\{\{(.+?)\}\}/g, (_, expr) => {
+                    try {
+                        const tokens = tokenize(expr.trim());
+                        if (tokens.length === 1 && tokens[0][0] === 'EOF') {
+                            return '';  // Empty expression
+                        }
+                        const parser = new Parser(tokens);
+                        const parsedExpr = parser.parseExpression();
+                        return this.evaluate(parsedExpr, env);
+                    } catch (error) {
+                        console.error(`Error in template expression '{{${expr}}}':`, error);
+                        return `[ERROR: ${error.message}]`;
+                    }
                 });
             }
+
             if (kind === 'NUMBER') return parseInt(val);
             if (kind === 'BOOLEAN') return val === 'true';
             if (kind === 'IDENT') {
