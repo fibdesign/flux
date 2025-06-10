@@ -1,4 +1,17 @@
+// http.js
+
 import http from 'http';
+
+function wrapRequest(rawReq) {
+    return {
+        __fluxType: 'fluxReq',
+        method: rawReq.method,
+        url: rawReq.url,
+        headers: rawReq.headers,
+        query: {},   // you can parse query if needed
+        params: {},  // set during route matching
+    };
+}
 
 export class HTTPServer {
     constructor(interpreter) {
@@ -39,9 +52,9 @@ export class HTTPServer {
             for (const route of this.routes) {
                 const match = this.matchRoute(route, req);
                 if (match) {
-                    // Add the matched params to the request
+                    const reqWrapped = wrapRequest(req);
                     fluxReq.params = match.params || {};
-                    this.executeRoute(route, fluxReq, fluxRes);
+                    this.executeRoute(route, reqWrapped, fluxRes);
                     matched = true;
                     break;
                 }
@@ -59,17 +72,35 @@ export class HTTPServer {
     }
 
     matchRoute(route, req) {
-        return req.method === route.method && req.url === route.path;
+        if (req.method !== route.method) return false;
+
+        const routeParts = route.path.split('/').filter(Boolean);
+        const urlParts = new URL(req.url, `http://${req.headers.host}`).pathname.split('/').filter(Boolean);
+
+        if (routeParts.length !== urlParts.length) return false;
+
+        const params = {};
+
+        for (let i = 0; i < routeParts.length; i++) {
+            if (routeParts[i].startsWith('#')) {
+                const paramName = routeParts[i].slice(1);
+                params[paramName] = urlParts[i];
+            } else if (routeParts[i] !== urlParts[i]) {
+                return false;
+            }
+        }
+
+        return { params };
     }
 
+
     executeRoute(route, req, res) {
-        // TODO: remove the .toString
         for (const mw of route.middlewares) {
-            const result = this.interpreter.callFunction(mw, [req.toString()]);
+            const result = this.interpreter.callFunction(mw, [req]);
             if (result === false) return; // Middleware blocked
         }
 
-        const result = this.interpreter.callFunction(route.handler, [JSON.stringify(req)]);
+        const result = this.interpreter.callFunction(route.handler, [req]);
         res.send(result);
     }
 

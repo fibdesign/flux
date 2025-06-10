@@ -2,14 +2,14 @@ fn geet(name: string) => void {
     emit name;
 }
 
-fn auth(req:string) => bool {
+fn auth(req:fluxReq) => bool {
     return true;
 }
-fn getUser(req:string) => string {
+fn getUser(req:fluxReq) => string {
     return `this User: {{req}}`;
 }
 
-fn homeView(req:string) => string {
+fn homeView(req:fluxReq) => string {
     return `User`;
 }
 
@@ -18,8 +18,7 @@ router '/' =>  {
 }
 
 router '/users' => [auth] {
-    GET '/' => getUser,
-    POST '/hi' => getUser,
+    GET '/#id' => getUser,
 }
 
 fn boot() => void {

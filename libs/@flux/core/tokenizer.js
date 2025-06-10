@@ -10,7 +10,7 @@ export function tokenize(code) {
         ['STRING', /'[^']*'/],
         ['NUMBER', /\d+/],
         ['BOOLEAN', /\btrue\b|\bfalse\b/],
-        ['TYPE', /\bstring\b|\bint\b|\bbool\b|\bvoid\b/],
+        ['TYPE', /\bstring\b|\bint\b|\bbool\b|\bvoid\b|\bfluxReq\b/],
         ['FN', /\bfn\b/],
         ['RETURN', /\breturn\b/],
         ['CONST', /\bconst\b/],
