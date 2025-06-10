@@ -114,15 +114,13 @@ export class HTTPServer {
     }
 
     listen() {
-        const port = 2351;
+        const projectRoot = process.cwd();
+        const projectJson = JSON.parse(readFileSync(join(projectRoot, 'flux.json'), 'utf8'));
+        const coreVersionJson = JSON.parse(
+            readFileSync(resolve(projectRoot, 'libs/@flux/core/version.json'), 'utf8')
+        );
+        const port = projectJson.port ||  2351;
         this.server.listen(port, () => {
-            // Load versions
-            const projectRoot = process.cwd();
-            const projectJson = JSON.parse(readFileSync(join(projectRoot, 'flux.json'), 'utf8'));
-            const coreVersionJson = JSON.parse(
-                readFileSync(resolve(projectRoot, 'libs/@flux/core/version.json'), 'utf8')
-            );
-
             // Colors
             const Reset = '\x1b[0m';
             const Dim = '\x1b[2m';

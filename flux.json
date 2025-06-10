@@ -1,5 +1,6 @@
 {
   "name": "test",
   "version": "0.0.1",
+  "port": "2351",
   "libs": {}
 }
