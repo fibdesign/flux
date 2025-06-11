@@ -31,15 +31,14 @@ export class Interpreter {
             }
         }
 
-        // Step 3: run boot function
-        if (!this.functions.boot) {
-            throw new Error("Missing required entry function 'boot()'");
-        }
-
-        this.callFunction('boot', [], {});
 
         // Step 4: process routers after boot
         this.processRouters();
+
+        // Step 3: run boot function
+        if (this.functions.boot) {
+            this.callFunction('boot', [], {});
+        }
     }
 
     // Add this new method to handle router processing
