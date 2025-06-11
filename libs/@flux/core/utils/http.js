@@ -6,6 +6,8 @@ import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {showUpPage} from "./fluxUpView.js";
+import { exec } from 'child_process';
+import {showWelcomePage} from "./fluxWelcomeView.js";
 
 function wrapRequest(rawReq, params = {}) {
     const reqObj = {
@@ -76,6 +78,10 @@ export class HTTPServer {
                 return res.end('Server configuration error: routes not properly initialized');
             }
             let matched = false;
+            if (req.url === '/__flux__welcome' && req.method === 'GET') {
+                showWelcomePage(res)
+                return;
+            }
             if (req.url === '/__flux__routes' && req.method === 'GET') {
                 showFluxRoutes(this.interpreter.routers, res)
                 return;
@@ -164,7 +170,7 @@ export class HTTPServer {
             const line = `${Dim}────────────────────────────────────────────${Reset}`;
 
             // Output
-            // console.clear();
+            console.clear();
             console.log(`${Green}🌐  Flux HTTP Server is Running${Reset}`);
             console.log(line);
             console.log(`  ➜  ${Bright}Local:${Reset}        ${Cyan}http://localhost:${port}${Reset}`);
@@ -177,6 +183,21 @@ export class HTTPServer {
             console.log(`  ➜  ${Bright}Flux Page:${Reset}     ${Cyan}http://localhost:${port}/__flux__up${Reset}     ${Dim}(status page)${Reset}`);
             console.log(line);
             console.log(`${Dim}Press Ctrl+C to stop the server${Reset}\n`);
+
+            const url = `http://localhost:${port}/__flux__welcome`;
+            const startCommands = {
+                win32: 'start',
+                darwin: 'open',
+                linux: 'xdg-open'
+            };
+            const startCommand = startCommands[process.platform];
+            if (startCommand) {
+                exec(`${startCommand} ${url}`, (err) => {
+                    if (err) {
+                        console.error('Failed to open browser:', err);
+                    }
+                });
+            }
         });
     }
 }
