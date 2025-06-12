@@ -52,6 +52,7 @@ module.exports = function downloadCommand(args) {
     }
 
     const libs = fluxConfig.libs || {};
+    const lockData = {};  // Object to store lockfile data
 
     if (Object.keys(libs).length === 0) {
         console.log(`${Dim}No libraries defined in flux.json.${Reset}`);
@@ -86,6 +87,8 @@ module.exports = function downloadCommand(args) {
 
         if (fs.existsSync(libPath)) {
             console.log(`  ➜  ${Cyan}Library '${folderName}' already exists, skipping download.${Reset}`);
+            // Add to lockfile even if already exists
+            lockData[libName] = { repo, tag };
             continue;
         }
 
@@ -98,8 +101,11 @@ module.exports = function downloadCommand(args) {
         if (result.status === 0) {
             console.log(`  └── ${Green}Downloading successful.${Reset}`);
             successCount++;
+            // Add to lockfile after successful download
+            lockData[libName] = { repo, tag };
         } else {
             console.log(`  └── ${Magenta}Downloading failed.${Reset}`);
+            // Don't add to lockfile if download failed
 
             const availableTags = getRemoteTags(repo);
             if (availableTags && availableTags.length) {
@@ -121,6 +127,23 @@ module.exports = function downloadCommand(args) {
         }
     }
 
+    // Generate flux-lock.json
+    const fluxLockPath = path.join(cwd, 'flux-lock.json');
+    try {
+        const fluxLockData = {
+            "name": fluxConfig?.name ?? "flux-app",
+            "version": fluxConfig?.version ?? "0.0.1",
+            "libs": lockData
+        }
+        fs.writeFileSync(fluxLockPath, JSON.stringify(fluxLockData, null, 2));
+        const libCount = Object.keys(lockData).length;
+        if (libCount > 0) {
+            console.log(`\n${Green}✅ Generated flux-lock.json with ${libCount} ${libCount === 1 ? 'entry' : 'entries'}${Reset}`);
+        }
+    } catch (err) {
+        console.error(`\n${Yellow}⚠️ Failed to generate flux-lock.json: ${err.message}${Reset}`);
+    }
+
     // Summary
     console.log('');
     console.log(`${Bright}Download Summary:${Reset}`);
@@ -136,5 +159,4 @@ module.exports = function downloadCommand(args) {
     } else {
         console.log(`  ${Green}🎉 No download failures! All libraries were downloaded without issues.${Reset}`);
     }
-
 };
