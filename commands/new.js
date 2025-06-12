@@ -1,17 +1,43 @@
 const fs = require('fs');
 const path = require('path');
+const readline = require('readline');
 
-module.exports = function newCommand(args) {
-    const projectName = args[0];
+const Reset = '\x1b[0m';
+const Dim = '\x1b[2m';
+const Bright = '\x1b[1m';
+const Cyan = '\x1b[36m';
+const Magenta = '\x1b[35m';
+const Green = '\x1b[32m';
+const Yellow = '\x1b[33m';
+
+function askProjectName() {
+    return new Promise((resolve) => {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+        });
+
+        const defaultName = 'my-flux-app';
+
+        rl.question(`${Cyan} ➜  Please enter your project name${Dim} (default: ${defaultName}): ${Reset}`, (answer) => {
+            rl.close();
+            const projectName = answer.trim() || defaultName;
+            resolve(projectName);
+        });
+    });
+}
+
+module.exports = async function newCommand(args) {
+    let projectName = args[0];
+
     if (!projectName) {
-        console.error('Error: Please specify a project name.');
-        process.exit(1);
+        projectName = await askProjectName();
     }
 
     const projectPath = path.resolve(process.cwd(), projectName);
 
     if (fs.existsSync(projectPath)) {
-        console.error(`Error: Directory "${projectName}" already exists.`);
+        console.error(`${Yellow}Error: Directory "${projectName}" already exists.${Reset}`);
         process.exit(1);
     }
 
@@ -20,7 +46,7 @@ module.exports = function newCommand(args) {
 
         copyStubs(projectPath);
 
-        console.log(`New Flux project created at ${projectPath} by copying stubs.`);
+        printSuccess(projectName, projectPath);
     } catch (err) {
         console.error('Failed to create project:', err.message);
         process.exit(1);
@@ -57,4 +83,22 @@ function copyDirRecursive(src, dest) {
             fs.writeFileSync(destPath, content);
         }
     }
+}
+
+function printSuccess(projectName, projectPath) {
+    const line = `${Dim}────────────────────────────────────────────${Reset}`;
+
+    console.log(``);
+    console.log(`${Green}🎉  New Flux Project Created Successfully!${Reset}`);
+    console.log(line);
+    console.log(`  ➜  ${Bright}Project Name:${Reset}   ${Magenta}${projectName}${Reset}`);
+    console.log(`  ➜  ${Bright}Location:${Reset}       ${Cyan}${projectPath}${Reset}`);
+    console.log(`  ➜  ${Bright}Next Steps:${Reset}`);
+    console.log(`          ➜  ${Yellow}cd ${projectName}${Reset}`);
+    console.log(`          ➜  ${Yellow}flux download${Reset}`);
+    console.log(`          ➜  ${Yellow}flux serve${Reset}`);
+    console.log(line);
+    console.log(`  ➜  ${Bright}Learn more at:${Reset}  ${Cyan}https://docs.flux.fibdesign.ir${Reset}`);
+    console.log(line);
+    console.log(`${Dim}Happy coding!${Reset}\n`);
 }
