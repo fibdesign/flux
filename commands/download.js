@@ -138,7 +138,7 @@ module.exports = function downloadCommand(args) {
         fs.writeFileSync(fluxLockPath, JSON.stringify(fluxLockData, null, 2));
         const libCount = Object.keys(lockData).length;
         if (libCount > 0) {
-            console.log(`\n${Green}✅ Generated flux-lock.json with ${libCount} ${libCount === 1 ? 'entry' : 'entries'}${Reset}`);
+            console.log(`\n${Green}✅ Generated flux-lock.json${Reset}`);
         }
     } catch (err) {
         console.error(`\n${Yellow}⚠️ Failed to generate flux-lock.json: ${err.message}${Reset}`);
