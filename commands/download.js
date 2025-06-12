@@ -12,11 +12,9 @@ const Green = '\x1b[32m';
 const Blue = '\x1b[34m';
 
 function getRemoteTags(repo) {
-    // Run `git ls-remote --tags` to get all tags from the remote repo
     const result = spawnSync('git', ['ls-remote', '--tags', repo], { encoding: 'utf-8' });
     if (result.status !== 0) return null;
 
-    // Parse tag names from output lines, ignore annotated tags (those ending with ^{})
     const tags = result.stdout
         .split('\n')
         .map(line => line.trim().split('\t')[1])
@@ -30,11 +28,8 @@ function getRemoteTags(repo) {
 function getFolderNameFromRepo(repoUrl) {
     try {
         const url = new URL(repoUrl);
-        // url.pathname is like "/user/repo" or "/user/repo.git"
-        // Remove leading slash and possible trailing ".git"
         return url.pathname.replace(/^\/|\.git$/g, '');
     } catch {
-        // If repoUrl is invalid, return null
         return null;
     }
 }
@@ -62,22 +57,28 @@ module.exports = function downloadCommand(args) {
         console.log(`${Dim}No libraries defined in flux.json.${Reset}`);
         return;
     }
+    console.log(`${Bright}${Blue}Starting to download libraries defined in flux.json...${Reset}`);
 
     const libsDir = path.join(cwd, 'libs');
     if (!fs.existsSync(libsDir)) {
         fs.mkdirSync(libsDir);
     }
 
+    let successCount = 0;
+    let failCount = 0;
+
     for (const [libName, { repo, tag }] of Object.entries(libs)) {
         console.log('');
         if (!repo || !tag) {
             console.warn(`  ➜  ${Yellow}Warning: Skipping '${libName}' - missing repository URL or tag.${Reset}`);
+            failCount++;
             continue;
         }
 
         const folderName = getFolderNameFromRepo(repo);
         if (!folderName) {
             console.warn(`  ➜  ${Yellow}Warning: Could not parse repo URL for '${libName}', skipping.${Reset}`);
+            failCount++;
             continue;
         }
 
@@ -88,7 +89,7 @@ module.exports = function downloadCommand(args) {
             continue;
         }
 
-        console.log(`  ➜  ${Bright}Downloading '${folderName}' at tag '${tag}'...${Reset}`);
+        console.log(`  📦  ${Bright}Downloading '${folderName}' at tag '${tag}'...${Reset}`);
 
         const result = spawnSync('git', ['clone', '--branch', tag, '--depth', '1', repo, libPath], {
             stdio: 'ignore'
@@ -96,14 +97,15 @@ module.exports = function downloadCommand(args) {
 
         if (result.status === 0) {
             console.log(`  └── ${Green}Downloading successful.${Reset}`);
+            successCount++;
         } else {
             console.log(`  └── ${Magenta}Downloading failed.${Reset}`);
 
-            // Suggest existing tags
             const availableTags = getRemoteTags(repo);
             if (availableTags && availableTags.length) {
                 const maxTagsToShow = 10;
                 const tagsToShow = availableTags.slice(0, maxTagsToShow);
+                console.log(`  └── ${Dim}Available tags are:${Reset}`);
                 tagsToShow.forEach((tag, index) => {
                     const isLast = index === tagsToShow.length - 1;
                     const branchChar = isLast ? '└' : '├';
@@ -115,6 +117,24 @@ module.exports = function downloadCommand(args) {
             } else {
                 console.log(`       └──  ${Dim}Could not retrieve tags from the repository.${Reset}`);
             }
+            failCount++;
         }
     }
+
+    // Summary
+    console.log('');
+    console.log(`${Bright}Download Summary:${Reset}`);
+
+    if (successCount > 0) {
+        console.log(`  ${Green}✅ Successfully downloaded ${successCount} ${successCount === 1 ? 'library' : 'libraries'}.${Reset}`);
+    } else {
+        console.log(`  ${Yellow}⚠️ No libraries were downloaded successfully.${Reset}`);
+    }
+
+    if (failCount > 0) {
+        console.log(`  ${Magenta}❌ Failed to download ${failCount} ${failCount === 1 ? 'library' : 'libraries'}. Please check the warnings above for details.${Reset}`);
+    } else {
+        console.log(`  ${Green}🎉 No download failures! All libraries were downloaded without issues.${Reset}`);
+    }
+
 };
