@@ -27,6 +27,18 @@ function getRemoteTags(repo) {
     return tags;
 }
 
+function getFolderNameFromRepo(repoUrl) {
+    try {
+        const url = new URL(repoUrl);
+        // url.pathname is like "/user/repo" or "/user/repo.git"
+        // Remove leading slash and possible trailing ".git"
+        return url.pathname.replace(/^\/|\.git$/g, '');
+    } catch {
+        // If repoUrl is invalid, return null
+        return null;
+    }
+}
+
 module.exports = function downloadCommand(args) {
     const cwd = process.cwd();
     const fluxJsonPath = path.join(cwd, 'flux.json');
@@ -63,14 +75,20 @@ module.exports = function downloadCommand(args) {
             continue;
         }
 
-        const libPath = path.join(libsDir, libName);
-
-        if (fs.existsSync(libPath)) {
-            console.log(`  ➜  ${Cyan}Library '${libName}' already exists, skipping download.${Reset}`);
+        const folderName = getFolderNameFromRepo(repo);
+        if (!folderName) {
+            console.warn(`  ➜  ${Yellow}Warning: Could not parse repo URL for '${libName}', skipping.${Reset}`);
             continue;
         }
 
-        console.log(`  ➜  ${Bright}Downloading '${libName}' at tag '${tag}'...${Reset}`);
+        const libPath = path.join(libsDir, folderName);
+
+        if (fs.existsSync(libPath)) {
+            console.log(`  ➜  ${Cyan}Library '${folderName}' already exists, skipping download.${Reset}`);
+            continue;
+        }
+
+        console.log(`  ➜  ${Bright}Downloading '${folderName}' at tag '${tag}'...${Reset}`);
 
         const result = spawnSync('git', ['clone', '--branch', tag, '--depth', '1', repo, libPath], {
             stdio: 'ignore'
