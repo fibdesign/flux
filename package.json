@@ -1,0 +1,28 @@
+{
+  "name": "flux",
+  "version": "0.1.0",
+  "bin": {
+    "flux": "./flux-cli.js"
+  },
+  "type": "commonjs",
+  "pkg": {
+    "assets": [
+      "assets/**/*",
+      "stubs/**/*"
+    ],
+    "scripts": [
+      "**/*.js"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ],
+    "outputPath": "build"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "pkg . --icon assets/icon.ico"
+  },
+  "dependencies": {
+    "fs-extra": "^11.3.0"
+  }
+}

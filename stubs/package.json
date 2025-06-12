@@ -1,0 +1,11 @@
+{
+  "name": "flux-app",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "serve": "flux serve",
+    "version": "flux -v",
+    "download": "flux download"
+  },
+  "private": true
+}

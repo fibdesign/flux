@@ -1,0 +1,6 @@
+{
+  "name": "flux-app",
+  "version": "0.0.1",
+  "port": "2351",
+  "libs": {}
+}

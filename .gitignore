@@ -1,0 +1,19 @@
+.idea/
+build/
+
+# Logs
+logs/
+*.log
+
+# Lock files
+flux-lock.json
+package-lock.json
+
+# Env files with secrets or local config
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+*.temp
