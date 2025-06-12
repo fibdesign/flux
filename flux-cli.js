@@ -7,6 +7,7 @@ const command = args[0];
 const serveCommand = require('./commands/serve');
 const versionCommand = require('./commands/version');
 const newCommand = require('./commands/new');
+const downloadCommand = require('./commands/download');
 
 switch (command) {
     case 'serve':
@@ -14,6 +15,9 @@ switch (command) {
         break;
     case 'new':
         newCommand(args.slice(1));
+        break;
+    case 'download':
+        downloadCommand(args.slice(1));
         break;
     case '-v':
     case '--version':
