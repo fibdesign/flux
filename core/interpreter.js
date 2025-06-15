@@ -1,6 +1,6 @@
-// interpreter.js
+// core/interpreter.js
 
-const { getTypeName } = require('./types.js');
+const { getTypeName } = require('../utils/types.js');
 const {HTTPServer} = require("../utils/http");
 
 class Interpreter {

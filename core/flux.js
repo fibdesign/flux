@@ -1,4 +1,4 @@
-// compiler/flux.js
+// core/flux.js
 
 const { readFileSync } = require('node:fs');
 const path = require('node:path');

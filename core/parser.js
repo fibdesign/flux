@@ -1,4 +1,4 @@
-// parser.js
+// core/parser.js
 
 class Parser {
     constructor(tokens) {

@@ -1,4 +1,4 @@
-// tokenizer.js
+// core/tokenizer.js
 
 function tokenize(code) {
     const tokenSpec = [

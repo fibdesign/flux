@@ -1,4 +1,4 @@
-// types.js
+// utils/types.js
 
 function getTypeName(value) {
     if (typeof value === 'string') return 'string';

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+// core/flux-cli.js
+
 const args = process.argv.slice(2);
 const command = args[0];
 
