@@ -162,34 +162,38 @@ class HTTPServer {
 
             const line = `${Dim}────────────────────────────────────────────${Reset}`;
 
-            console.clear();
-            console.log(`${Green}🌐  Flux HTTP Server is Running${Reset}`);
-            console.log(line);
-            console.log(`  ➜  ${Bright}Local:${Reset}        ${Cyan}http://localhost:${port}${Reset}`);
-            console.log(`  ➜  ${Bright}Project:${Reset}      ${Magenta}${projectJson.name} v${projectJson.version}${Reset}`);
-            console.log(`  ➜  ${Bright}Core:${Reset}         ${Magenta}${coreVersionJson.name} v${coreVersionJson.version}${Reset}`);
-            console.log(`  ➜  ${Bright}Environment:${Reset}  ${Yellow}development${Reset}`);
-            console.log(`  ➜  ${Bright}Interpreter:${Reset}  ${Blue}Node.js ${process.version}${Reset}`);
-            console.log(line);
-            console.log(`  ➜  ${Bright}Flux Page:${Reset}     ${Cyan}http://localhost:${port}/__flux__routes${Reset} ${Dim}(routes viewer)${Reset}`);
-            console.log(`  ➜  ${Bright}Flux Page:${Reset}     ${Cyan}http://localhost:${port}/__flux__up${Reset}     ${Dim}(status page)${Reset}`);
-            console.log(line);
-            console.log(`${Dim}Press Ctrl+C to stop the server${Reset}\n`);
+            if (!process.env.__FLUX_BROWSER_OPENED__){
+                console.clear();
+                console.log(`${Green}🌐  Flux HTTP Server is Running${Reset}`);
+                console.log(line);
+                console.log(`  ➜  ${Bright}Local:${Reset}        ${Cyan}http://localhost:${port}${Reset}`);
+                console.log(`  ➜  ${Bright}Project:${Reset}      ${Magenta}${projectJson.name} v${projectJson.version}${Reset}`);
+                console.log(`  ➜  ${Bright}Core:${Reset}         ${Magenta}${coreVersionJson.name} v${coreVersionJson.version}${Reset}`);
+                console.log(`  ➜  ${Bright}Environment:${Reset}  ${Yellow}development${Reset}`);
+                console.log(`  ➜  ${Bright}Interpreter:${Reset}  ${Blue}Node.js ${process.version}${Reset}`);
+                console.log(line);
+                console.log(`  ➜  ${Bright}Flux Page:${Reset}     ${Cyan}http://localhost:${port}/__flux__routes${Reset} ${Dim}(routes viewer)${Reset}`);
+                console.log(`  ➜  ${Bright}Flux Page:${Reset}     ${Cyan}http://localhost:${port}/__flux__up${Reset}     ${Dim}(status page)${Reset}`);
+                console.log(line);
+                console.log(`${Dim}Press Ctrl+C to stop the server${Reset}\n`);
 
-            const url = `http://localhost:${port}/__flux__welcome`;
-            const startCommands = {
-                win32: 'start',
-                darwin: 'open',
-                linux: 'xdg-open'
-            };
-            const startCommand = startCommands[process.platform];
-            if (startCommand) {
-                exec(`${startCommand} ${url}`, (err) => {
-                    if (err) {
-                        console.error('Failed to open browser:', err);
-                    }
-                });
+                const url = `http://localhost:${port}/__flux__welcome`;
+                const startCommands = {
+                    win32: 'start',
+                    darwin: 'open',
+                    linux: 'xdg-open'
+                };
+                const startCommand = startCommands[process.platform];
+                if (startCommand) {
+                    exec(`${startCommand} ${url}`, (err) => {
+                        if (err) {
+                            console.error('Failed to open browser:', err);
+                        }
+                    });
+                }
             }
+
+
         });
     }
 }
