@@ -4,10 +4,10 @@ const args = process.argv.slice(2);
 const command = args[0];
 
 // Static imports for pkg compatibility
-const serveCommand = require('./commands/serve');
-const versionCommand = require('./commands/version');
-const newCommand = require('./commands/new');
-const downloadCommand = require('./commands/download');
+const serveCommand = require('../commands/serve');
+const versionCommand = require('../commands/version');
+const newCommand = require('../commands/new');
+const downloadCommand = require('../commands/download');
 
 switch (command) {
     case 'serve':

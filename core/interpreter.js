@@ -1,7 +1,7 @@
 // interpreter.js
 
 const { getTypeName } = require('./types.js');
-const {HTTPServer} = require("./utils/http");
+const {HTTPServer} = require("../utils/http");
 
 class Interpreter {
     constructor(ast) {
