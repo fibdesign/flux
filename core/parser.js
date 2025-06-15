@@ -28,13 +28,55 @@ class Parser {
                 this.ast.push(this.parseFunction());
             } else if (this.current()[0] === 'EMIT') {
                 this.ast.push(this.parseEmit());
+            }else if (this.current()[0] === 'IMPORT') {
+                this.ast.push(this.parseImport());
+            } else if (this.current()[0] === 'EXPORT') {
+                this.ast.push(this.parseExport());
             } else {
                 this.ast.push(this.parseStatement());
             }
         }
         return this.ast;
     }
+    parseImport() {
+        this.eat('IMPORT');
+        const namespace = this.eat('IDENT');
+        const path = this.eat('STRING');
+        let alias = null;
 
+        if (this.current()[0] === 'ALIAS') {
+            this.eat('ALIAS');
+            alias = this.eat('IDENT');
+        }
+
+        this.eat('SEMICOLON');
+        return {
+            kind: 'import',
+            namespace,
+            path: path.slice(1, -1), // Remove quotes
+            alias
+        };
+    }
+    parseExport() {
+        this.eat('EXPORT');
+        this.eat('LBRACE');
+        const exports = [];
+
+        while (this.current()[0] !== 'RBRACE') {
+            exports.push(this.eat('IDENT'));
+            if (this.current()[0] === 'COMMA') {
+                this.eat('COMMA');
+            } else {
+                break;
+            }
+        }
+
+        this.eat('RBRACE');
+        return {
+            kind: 'export',
+            exports
+        };
+    }
     parseRouter() {
         this.eat('ROUTER');
         const basePath = this.eat('STRING');
@@ -244,6 +286,24 @@ class Parser {
                     type: 'member_expression',
                     object: expr,
                     property
+                };
+            } else if (this.current()[0] === 'LPAREN') {
+                // Handle function calls after identifiers or member expressions
+                this.eat('LPAREN');
+                const args = [];
+                while (this.current()[0] !== 'RPAREN') {
+                    args.push(this.parseExpression());
+                    if (this.current()[0] === 'COMMA') {
+                        this.eat('COMMA');
+                    } else {
+                        break;
+                    }
+                }
+                this.eat('RPAREN');
+                expr = {
+                    type: 'function_call',
+                    callee: expr,  // This can be identifier or member expression
+                    arguments: args
                 };
             } else if (['PLUS', 'MINUS', 'STAR', 'SLASH'].includes(this.current()[0])) {
                 const op = this.eat(this.current()[0]);

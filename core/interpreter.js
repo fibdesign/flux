@@ -2,6 +2,12 @@
 
 const { getTypeName } = require('../utils/types.js');
 const {HTTPServer} = require("../utils/http");
+const path = require('node:path');
+const { readFileSync } = require('node:fs');
+const { tokenize } = require('./tokenizer');
+const { Parser } = require('./parser');
+const projectRoot = process.env.FLUX_PROJECT_ROOT || path.resolve('.');
+const coreDir = __dirname;
 
 class Interpreter {
     constructor(ast) {
@@ -9,35 +15,98 @@ class Interpreter {
         this.environment = {};
         this.functions = {};
         this.routers = []; // Add router storage
+        this.exports = new Set();
+        this.moduleCache = new Map();
+        this.currentFile = null;
     }
 
-    run() {
-        // Step 1: collect functions and routers
-        for (const node of this.ast) {
+    runModule(ast, filePath) {
+        this.currentFile = filePath;
+        this.fileDir = path.dirname(filePath);
+
+        // Reset module-specific state
+        this.environment = {};
+        this.functions = {};
+        this.routers = [];
+        this.exports = new Set();
+
+        // Collect functions and routers
+        for (const node of ast) {
             if (node.kind === 'function') {
                 this.functions[node.name] = node;
-            } else if (node.kind === 'router') { // Add router collection
+            } else if (node.kind === 'router') {
                 this.routers.push(node);
             }
         }
 
-        // Step 2: run top-level non-function/non-router code
-        for (const node of this.ast) {
-            if (node.kind !== 'function' && node.kind !== 'router') {
+        // Execute top-level code
+        for (const node of ast) {
+            if (node.kind !== 'function' && node.kind !== 'router' && node.kind !== 'export') {
                 this.execute(node, this.environment);
             }
         }
 
+        // Process exports
+        for (const node of ast) {
+            if (node.kind === 'export') {
+                for (const name of node.exports) {
+                    if (!(name in this.environment) && !(name in this.functions)) {
+                        throw new Error(`Cannot export '${name}': not defined`);
+                    }
+                    this.exports.add(name);
+                }
+            }
+        }
 
-        // Step 4: process routers after boot
+        return {
+            environment: this.environment,
+            functions: this.functions,
+            exports: this.exports,
+            routers: this.routers
+        };
+    }
+    finalize() {
         this.processRouters();
-
-        // Step 3: run boot function
         if (this.functions.boot) {
             this.callFunction('boot', [], {});
         }
     }
 
+    resolveModule(importPath) {
+        if (importPath.startsWith('@/')) {
+            // Project-relative import
+            return path.resolve(projectRoot, importPath.slice(2));
+        } else if (importPath.startsWith('./') || importPath.startsWith('../')) {
+            // Relative to current file
+            return path.resolve(this.fileDir, importPath);
+        } else {
+            // Core module
+            return path.resolve(coreDir, importPath);
+        }
+    }
+    loadModule(importPath) {
+        const resolvedPath = this.resolveModule(importPath);
+
+        // Check cache
+        if (this.moduleCache.has(resolvedPath)) {
+            return this.moduleCache.get(resolvedPath);
+        }
+
+        // Read and parse module
+        const code = readFileSync(resolvedPath, 'utf-8');
+        const tokens = tokenize(code);
+        const parser = new Parser(tokens);
+        const ast = parser.parse();
+
+        // Create new interpreter for module
+        const moduleInterpreter = new Interpreter();
+        moduleInterpreter.moduleCache = this.moduleCache; // Share cache
+        const module = moduleInterpreter.runModule(ast, resolvedPath);
+
+        // Cache and return
+        this.moduleCache.set(resolvedPath, module);
+        return module;
+    }
     // Add this new method to handle router processing
     processRouters() {
         const flattenRoutes = (router, basePath = '', baseMiddlewares = []) => {
@@ -104,7 +173,35 @@ class Interpreter {
                 value,
                 const: stmt.const
             };
-        } else if (stmt.kind === 'expression_statement') {
+        }else if (stmt.kind === 'import') {
+            const module = this.loadModule(stmt.path);
+            const namespace = {};
+
+            // Create namespace with exported values
+            for (const name of module.exports) {
+                if (name in module.environment) {
+                    namespace[name] = module.environment[name].value;
+                } else if (name in module.functions) {
+                    // Create bound function
+                    namespace[name] = (...args) => {
+                        const tempInterpreter = new Interpreter();
+                        tempInterpreter.environment = module.environment;
+                        tempInterpreter.functions = module.functions;
+                        return tempInterpreter.callFunction(name, args, tempInterpreter.environment);
+                    };
+                }
+            }
+
+            // Register namespace
+            const alias = stmt.alias || stmt.namespace;
+            env[alias] = {
+                type: 'object',
+                value: namespace,
+                const: true
+            };
+        } else if (stmt.kind === 'export') {
+            // Handled in runModule
+        }  else if (stmt.kind === 'expression_statement') {
             this.evaluate(stmt.expression, env);
         } else if (stmt.kind === 'return') {
             const value = this.evaluate(stmt.value, env);
@@ -192,8 +289,17 @@ class Interpreter {
                     break;
 
                 case 'function_call':
-                    const args = expr.args.map(arg => this.evaluate(arg, env));
-                    return this.callFunction(expr.name, args, env);
+                    // Evaluate the callee (could be identifier or member expression)
+                    const callee = this.evaluate(expr.callee, env);
+                    const args = expr.arguments.map(arg => this.evaluate(arg, env));
+
+                    // Handle different callee types
+                    if (typeof callee === 'function') {
+                        return callee(...args);
+                    } else if (typeof callee === 'object' && callee.__fluxCall) {
+                        return callee.__fluxCall(args);
+                    }
+                    throw new Error(`Cannot call '${callee}' as a function`);
 
                 case 'object_literal':
                     const obj = {};
