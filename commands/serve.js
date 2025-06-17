@@ -23,7 +23,8 @@ module.exports = function serveCommand(args) {
     process.env.__FLUX_BROWSER_OPENED__ = true;
     watch(targetDir, { recursive: true, filter: /\.flux$/ }, (evt, name) => {
         const date = new Date().toLocaleTimeString(undefined,{hour12: false})
-        console.log(`${FgBlue}[${date}]${Reset} ${FgYellow}+1${Reset} ${FgGreen}files changed, restarting server...${Reset}`);
+        const fileName = name.split(/[\\/]/).pop();
+        console.log(`${FgBlue}[${date}]${Reset} ${FgYellow}+1${Reset} ${FgGreen}files changed, restarting server...${Reset}  ➜  ${fileName}`);
         startServer();
     });
 };
