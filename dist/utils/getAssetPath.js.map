@@ -1,0 +1,1 @@
+{"version":3,"file":"getAssetPath.js","sourceRoot":"","sources":["../../src/utils/getAssetPath.ts"],"names":[],"mappings":";;;;;AAEA,oCAKC;AAPD,0DAA6B;AAE7B,SAAgB,YAAY,CAAC,YAAoB;IAE7C,OAAO,OAAO,CAAC,GAAG;QACd,CAAC,CAAC,mBAAI,CAAC,IAAI,CAAC,SAAS,EAAE,YAAY,CAAC;QACpC,CAAC,CAAC,mBAAI,CAAC,OAAO,CAAC,SAAS,EAAE,YAAY,CAAC,CAAA;AAC/C,CAAC"}

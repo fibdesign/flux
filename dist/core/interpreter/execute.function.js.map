@@ -1,0 +1,1 @@
+{"version":3,"file":"execute.function.js","sourceRoot":"","sources":["../../../src/core/interpreter/execute.function.ts"],"names":[],"mappings":";;;AAGO,MAAM,eAAe,GAAG,CAAC,WAAwB,EAAE,IAAmB,EAAE,EAAE;IAC7E,MAAM,IAAI,GAAG,IAAI,CAAC,IAAI,CAAC;IACvB,WAAW,CAAC,SAAS,CAAC,IAAI,CAAC,GAAG,IAAI,CAAC;AACvC,CAAC,CAAA;AAHY,QAAA,eAAe,mBAG3B"}

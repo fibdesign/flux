@@ -1,0 +1,11 @@
+{
+  "name": "flux-examples",
+  "version": "0.0.1",
+  "port": 2351,
+  "libs": {
+    "@fib/maxp": {
+      "repo": "https://github.com/fibdesign/maxup",
+      "tag": "2.11"
+    }
+  }
+}
