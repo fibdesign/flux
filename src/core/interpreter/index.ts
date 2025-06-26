@@ -10,23 +10,32 @@ import {evaluateIdentifier} from "./evaluate.identifier";
 import {HTTPServer} from "../../utils/server/HTTPServer";
 import {IFluxVariable} from "../../types/IFluxVariable";
 import {TFluxValue} from "../../types/TFluxValue";
-import {executeFunctionCall} from "./execute.function.call";
+import {evaluateFunctionCall} from "./evaluate.function.call";
 import {executeFunction} from "./execute.function";
 import {executeFluxFunction} from "./execute.flux.function";
 import {evaluateTemplate} from "./evaluate.template";
 import {executeRouter} from "./execute.router";
 import {evaluateObjectLiteral} from "./evaluate.object.literal";
+import {customTypesRegistry} from "../../utils/customTypesRegistry";
+import {TODO} from "../../types/TODO";
+import {IMacro} from "../../types/IMacro";
+import {evaluateMacro} from "./evaluate.macro";
+import {evaluateMacroCall} from "./evaluate.macro.call";
 
 export class Interpreter {
     private AST: TFluxASTNode[] = []
     public ENV: Record<string, IFluxVariable> = {}
     public Functions: Record<string, IFunctionNode> = {};
     public Routes: IRouteEnv[] = [];
+    public Macros: IMacro;
 
     constructor() {
         this.ENV = {};
         this.Functions = {};
         this.Routes = [];
+        this.Macros = {
+            current_request: null,
+        }
     }
 
     run(ast: TFluxASTNode[]) {
@@ -72,7 +81,7 @@ export class Interpreter {
             return evaluateIdentifier(this,expression)
         }
         if (expression.type === AST_TYPES.FUNCTION_CALL){
-            return executeFunctionCall(this,expression)
+            return evaluateFunctionCall(this,expression)
         }
         if (expression.type === AST_TYPES.TEMPLATE_LITERAL){
             return evaluateTemplate(this, expression)
@@ -83,6 +92,12 @@ export class Interpreter {
         if (expression.type === AST_TYPES.OBJECT_LITERAL){
             return evaluateObjectLiteral(this,expression)
         }
+        if (expression.type === AST_TYPES.MACRO){
+            return evaluateMacro(this, expression)
+        }
+        if (expression.type === AST_TYPES.MACRO_CALL){
+            return evaluateMacroCall(this, expression)
+        }
         FluxErrorHandler.error(`Unknown expression type: ${expression.type}`)
     }
 
@@ -91,6 +106,10 @@ export class Interpreter {
 
         if (actualValue === null){
             return declared.nullable;
+        }
+
+        if (customTypesRegistry[expected]) {
+            return customTypesRegistry[expected](actualValue);
         }
 
         if (typeof actualValue === 'object' && expected === 'object') return true;

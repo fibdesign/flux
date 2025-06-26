@@ -33,7 +33,7 @@ export class FluxErrorHandler {
         process.exit(code ?? EXIT_CODES.GENERAL_ERROR)
     }
 
-    static HttpError(res:any, status: number, message: string){
+    static HttpError(res:any, status: number, message?: string){
         res.setHeader('Content-Type', 'application/json');
         res.statusCode = status;
         return res.end(JSON.stringify({

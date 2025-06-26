@@ -39,6 +39,7 @@ export const tokenSpec: ITokenSpec[] = [
     { type: TOKEN_TYPES.RBRACE, pattern: /\}/ },
     { type: TOKEN_TYPES.QUESTION, pattern: /\?/ },
     { type: TOKEN_TYPES.NULL, pattern: /^null\b/ },
+    { type: TOKEN_TYPES.MACRO, pattern: /@[a-zA-Z_][a-zA-Z0-9_]*/ },
     { type: TOKEN_TYPES.IDENT, pattern: /[a-zA-Z_][a-zA-Z0-9_]*/ },
     { type: TOKEN_TYPES.MISMATCH, pattern: /./ },
 ];

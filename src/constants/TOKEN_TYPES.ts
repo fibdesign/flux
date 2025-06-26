@@ -42,4 +42,5 @@ export const TOKEN_TYPES = {
     EOF: 'EOF',
     QUESTION: 'QUESTION',
     NULL: 'NULL',
+    MACRO: 'MACRO',
 };

@@ -49,6 +49,12 @@ export interface IFunctionCallNode extends IASTNode {
     arguments: TFluxASTNode[]
 }
 
+export interface IMacroCallNode extends IASTNode {
+    type: typeof AST_TYPES.MACRO_CALL,
+    expression: TFluxASTNode,
+    arguments: TFluxASTNode[]
+}
+
 export interface IObjectLiteralNode extends IASTNode {
     type: typeof AST_TYPES.OBJECT_LITERAL,
     properties: {
@@ -108,6 +114,10 @@ export interface ITemplateNode extends IASTNode {
     type: typeof AST_TYPES.TEMPLATE_LITERAL,
     values: TTemplateValue[]
 }
+export interface IMacroNode extends IASTNode {
+    type: typeof AST_TYPES.MACRO,
+    value: IToken
+}
 export interface ITemplateStringValue {
     type: 'string',
     value: TFluxValue
@@ -143,4 +153,6 @@ export type TFluxASTNode = IRouteNode
     | IAssignmentNode
     | IExpressionStatementNode
     | ITemplateNode
-    | IFuxRequestNode;
+    | IFuxRequestNode
+    | IMacroNode
+    | IMacroCallNode;

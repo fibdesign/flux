@@ -3,15 +3,13 @@ import {IFunctionCallNode, IRouteNode, IRouterNode} from "../../types/TFluxAST";
 import {AST_TYPES} from "../../constants/AST_TYPES";
 
 const joinPaths = (base: string, route: string): string => {
-    const cleanBase = (base === '/') ? base : base.endsWith('/') ? base.slice(0, -1) : base;
-    if (route === '' || route === '/') {
-        return cleanBase === '/' ? '/' : cleanBase;
-    }
-    const cleanRoute = route.startsWith('/') ? route.slice(1) : route;
-    return cleanBase + '/' + cleanRoute;
+    const cleanBase = base.replace(/\/+$/, '');    // remove trailing slashes from base
+    const cleanRoute = route.replace(/^\/+/, '')   // remove leading slashes from route
+        .replace(/\/+$/, ''); // remove trailing slashes from route
+
+    const joined = cleanBase + (cleanRoute ? '/' + cleanRoute : '');
+    return joined || '/';
 };
-
-
 
 export const executeRouter = (interpreter: Interpreter, node: IRouterNode): void => {
     const basePath = node.path;

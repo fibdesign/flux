@@ -21,7 +21,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "rd /s /q dist && tsc",
+    "build": "remove.bat && tsc",
     "copy": "copy.bat",
     "pkg": "pkg . --icon assets/icon.ico && npm run copy",
     "compile": "npm run build && npm run pkg"

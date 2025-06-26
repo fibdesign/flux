@@ -10,18 +10,19 @@ import {IProjectFluxJson} from "../../types/IProjectFluxJson";
 import {ShowFluxUpPage} from "./show.flux.up.page";
 import {ShowFluxRoutesPage} from "./show.flux.routes.page";
 import {Interpreter} from "../../core/interpreter";
-import {executeFunctionCall} from "../../core/interpreter/execute.function.call";
+import {evaluateFunctionCall} from "../../core/interpreter/evaluate.function.call";
 import {AST_TYPES} from "../../constants/AST_TYPES";
 import {IFuxRequestNode, IRouteEnv} from "../../types/TFluxAST";
 import {IncomingMessage, ServerResponse} from "node:http";
+import {IResponse} from "../../types/IResponse";
 
 export class HTTPServer {
     private server: http.Server;
     private readonly projectJson: IProjectFluxJson;
     private readonly coreVersionJson: TODO;
     private readonly port: number;
-    private routes: IRouteEnv[] = [];
-    private interpreter: Interpreter;
+    private readonly routes: IRouteEnv[] = [];
+    private readonly interpreter: Interpreter;
 
     constructor(interpreter: Interpreter) {
         this.server = http.createServer(this.handleRequest.bind(this));
@@ -66,7 +67,11 @@ export class HTTPServer {
 
         if (!matched){
             res.statusCode = 404;
-            res.end('Not found');
+            const response: IResponse = {
+                status: 404,
+                message: 'Not found'
+            }
+            res.end(JSON.stringify(response));
         }
 
     }
@@ -126,17 +131,36 @@ export class HTTPServer {
     }
 
     executeRoute(route: IRouteEnv, req: IFuxRequestNode, res: ServerResponse) {
-        // for (const middleware of route.middlewares) {
-        //                 const result = executeFunctionCall(this.interpreter, middleware)
-        //     if (result === false) return;
-        // }
-        route.handler.arguments = [req]
-        const result = executeFunctionCall(this.interpreter, route.handler);
+        try {
+            for (const middleware of route.middlewares) {
+                this.interpreter.Macros.current_request = req
+                const result = evaluateFunctionCall(this.interpreter, middleware)
+                if (result === false) return;
+            }
+            this.interpreter.Macros.current_request = req
+            const result = evaluateFunctionCall(this.interpreter, route.handler);
 
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({
-            data: result
-        }));
+            res.setHeader('Content-Type', 'application/json');
+            // TODO: handle response: get, store, etc
+            res.end(JSON.stringify({
+                status: 200,
+                data: result
+            }));
+        }
+        catch (err: any) {
+            if (err?.__flux_error_type == 'abort') {
+                res.statusCode = err.response.status;
+                res.end(JSON.stringify(err.response));
+            }
+            else {
+                res.statusCode = 500;
+                const response: IResponse = {
+                    status: 500,
+                    message: 'Internal Server Error'
+                }
+                res.end(JSON.stringify(response));
+            }
+        }
     }
 
     async listen(): Promise<void> {

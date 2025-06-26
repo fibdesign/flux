@@ -111,11 +111,12 @@ export class Parser {
 
                 this.eat(TOKEN_TYPES.RPAREN);
                 expression = {
-                    type: AST_TYPES.FUNCTION_CALL,
+                    type: expression.type === AST_TYPES.MACRO ? AST_TYPES.MACRO_CALL : AST_TYPES.FUNCTION_CALL,
                     expression: expression,
                     arguments: args,
                 };
-            } else {
+            }
+            else {
                 break;
             }
         }
@@ -133,6 +134,14 @@ export class Parser {
                 type: AST_TYPES.LITERAL,
                 value: token
             }
+        }
+
+        if (token.type === TOKEN_TYPES.MACRO) {
+            this.tokenIndex++;
+            return {
+                type: AST_TYPES.MACRO,
+                value: token,
+            };
         }
 
         if (token.type === TOKEN_TYPES.BACKTICK){
