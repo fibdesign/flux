@@ -1,1 +1,0 @@
-{"version":3,"file":"serve.command.help.js","sourceRoot":"","sources":["../../../src/commands/helps/serve.command.help.ts"],"names":[],"mappings":";;;AAAA,iEAA4D;AAG/C,QAAA,gBAAgB,GAAgB;IACzC,WAAW,EAAE,sDAAsD;IACnE,KAAK,EAAE,iBAAiB;IACxB,OAAO,EAAE;QACL,EAAE,KAAK,EAAE,YAAY,EAAE,WAAW,EAAE,oCAAoC,EAAE;QAC1E,EAAE,KAAK,EAAE,YAAY,EAAE,WAAW,EAAE,6BAAa,CAAC,IAAI,EAAE;KAC3D;CACJ,CAAC"}

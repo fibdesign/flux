@@ -1,1 +1,0 @@
-{"version":3,"file":"new.command.help.js","sourceRoot":"","sources":["../../../src/commands/helps/new.command.help.ts"],"names":[],"mappings":";;;AACA,iEAA4D;AAE/C,QAAA,cAAc,GAAgB;IACvC,WAAW,EAAE,oBAAoB;IACjC,KAAK,EAAE,8BAA8B;IACrC,OAAO,EAAE;QACL,EAAE,KAAK,EAAE,YAAY,EAAE,WAAW,EAAE,6BAAa,CAAC,IAAI,EAAE;KAC3D;CACJ,CAAC"}
