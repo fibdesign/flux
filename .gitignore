@@ -2,6 +2,7 @@
 build/
 node_modules/
 temp/
+dist/
 
 # Logs
 logs/
