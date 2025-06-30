@@ -21,6 +21,7 @@ import {TODO} from "../../types/TODO";
 import {IMacro} from "../../types/IMacro";
 import {evaluateMacro} from "./evaluate.macro";
 import {evaluateMacroCall} from "./evaluate.macro.call";
+import {evaluateMemberExpression} from "./evaluate.member.expression";
 
 export class Interpreter {
     private AST: TFluxASTNode[] = []
@@ -97,6 +98,9 @@ export class Interpreter {
         }
         if (expression.type === AST_TYPES.MACRO_CALL){
             return evaluateMacroCall(this, expression)
+        }
+        if (expression.type === AST_TYPES.MEMBER_EXPRESSION){
+            return evaluateMemberExpression(this,expression)
         }
         FluxErrorHandler.error(`Unknown expression type: ${expression.type}`)
     }
