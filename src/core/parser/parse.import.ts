@@ -6,7 +6,7 @@ import {AST_TYPES} from "../../constants/AST_TYPES";
 import {IImportNode} from "../../types/TFluxAST";
 
 export const parseImport = (parser: Parser): IImportNode => {
-    parser.eat(TOKEN_TYPES.EXPORT)
+    parser.eat(TOKEN_TYPES.IMPORT)
     const name = parser.eat(TOKEN_TYPES.IDENT);
     const path = parser.eat(TOKEN_TYPES.STRING);
     let alias: IToken | undefined;

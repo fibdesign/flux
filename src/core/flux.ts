@@ -16,7 +16,7 @@ const preLoadFluxModules = () => {
 }
 
 const runApp = () => {
-    const FILE_PATH = 'boot.flux';
+    const FILE_PATH = 'src/boot.flux';
     if (!fs.existsSync(FILE_PATH)) {
         FluxErrorHandler.error('No boot.flux found.')
     }
