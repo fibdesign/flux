@@ -1,4 +1,5 @@
 export const MACROS = {
     REQUEST: '@fluxReq',
-    ABORT: '@abort'
+    ABORT: '@abort',
+    Log: '@log',
 }
