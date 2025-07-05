@@ -1,4 +1,4 @@
-import {IFunctionNode, IRouteEnv, IRouteNode, TFluxASTNode} from "../../types/TFluxAST";
+import {IFunctionNode, IRouteEnv, TFluxASTNode} from "../../types/TFluxAST";
 import {AST_TYPES} from "../../constants/AST_TYPES";
 import {FluxErrorHandler} from "../../utils/FluxErrorHandler";
 import {executeEmit} from "./execute.emit";
@@ -17,11 +17,11 @@ import {evaluateTemplate} from "./evaluate.template";
 import {executeRouter} from "./execute.router";
 import {evaluateObjectLiteral} from "./evaluate.object.literal";
 import {customTypesRegistry} from "../../utils/customTypesRegistry";
-import {TODO} from "../../types/TODO";
 import {IMacro} from "../../types/IMacro";
 import {evaluateMacro} from "./evaluate.macro";
 import {evaluateMacroCall} from "./evaluate.macro.call";
 import {evaluateMemberExpression} from "./evaluate.member.expression";
+import {Database} from "../../database";
 
 export class Interpreter {
     private AST: TFluxASTNode[] = []
@@ -29,6 +29,7 @@ export class Interpreter {
     public Functions: Record<string, IFunctionNode> = {};
     public Routes: IRouteEnv[] = [];
     public Macros: IMacro;
+    public Database: Database | undefined;
 
     constructor() {
         this.ENV = {};
@@ -45,11 +46,17 @@ export class Interpreter {
             this.execute(node)
         }
     }
+    async initDatabase(){
+        this.Database = new Database();
+        await this.Database.init();
+    }
 
     async serve() {
         if ('boot' in this.Functions){
             executeFluxFunction(this, 'boot');
         }
+
+        await this.initDatabase()
 
         const server = new HTTPServer(this)
         await server.listen()
