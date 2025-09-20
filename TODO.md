@@ -2,3 +2,20 @@
 
 - [ ] import/export
 - [ ] api versioning
+- [ ] unit test
+- [ ] match
+- [ ] wait
+- [ ] loop
+- [ ] models
+- [ ] mock api
+- [ ] doc api
+- [ ] request validations
+- [ ] route alias
+- [ ] route example
+- [ ] scope
+- [ ] env
+- [ ] cooldown
+- [ ] tags
+- [ ] cache
+- [ ] localization
+- [ ] make:thing command
