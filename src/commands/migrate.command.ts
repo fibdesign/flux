@@ -37,7 +37,6 @@ function discoverFluxFiles(baseDir: string, subFolder: string): string[] {
     return result;
 }
 
-// TODO: options: -f (fresh: drop all tables)
 export const migrateCommand = async (options?: string[]) => {
 
     const projectRoot = path.resolve('.');
