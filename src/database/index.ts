@@ -33,6 +33,10 @@ export class Database {
             default: FluxErrorHandler.error('Unknown Database driver')
         }
     }
+    async dropAllTables(): Promise<void> {
+        if (!this.driver) FluxErrorHandler.runtime('Database not initialized');
+        await this.driver.dropAllTables();
+    }
 
     async runMigrations(migrations: IMigration[]): Promise<void> {
         if (!this.driver) FluxErrorHandler.runtime('Database not initialized');

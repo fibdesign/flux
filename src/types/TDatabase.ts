@@ -12,6 +12,7 @@ export interface IDBDriver {
     connect(): Promise<void>;
     close(): Promise<void>;
     execute(sql: string, bindings: any[]): Promise<any>;
+    dropAllTables(): Promise<void>;
     runMigrations(migrations: IMigration[]): Promise<void>;
 }
 

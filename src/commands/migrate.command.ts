@@ -37,7 +37,7 @@ function discoverFluxFiles(baseDir: string, subFolder: string): string[] {
     return result;
 }
 
-// options: -s (seed), -f (fresh: drop all tables), -fs/-sf (do both -s and -f)
+// TODO: options: -f (fresh: drop all tables)
 export const migrateCommand = async (options?: string[]) => {
 
     const projectRoot = path.resolve('.');
@@ -45,6 +45,11 @@ export const migrateCommand = async (options?: string[]) => {
     const migrationFiles = discoverFluxFiles(path.join(projectRoot, 'src/modules'), 'migrations');
 
     const interpreter = new Interpreter()
+
+    if (options?.includes('-f')) {
+        await interpreter.dropAllTables();
+    }
+
     for (const migrationPath of migrationFiles) {
         const code = readFileSync(migrationPath, 'utf-8');
         const tokens = tokenize(code);

@@ -5,6 +5,7 @@ import {FluxErrorHandler} from "../../utils/FluxErrorHandler";
 import {IMigration} from "../../types/IMigration";
 import {IMigrationAction} from "../../types/IMigrationAction";
 import {logMigration} from "../../utils/logMigration";
+import {COLORS} from "../../constants/COLORS";
 
 export class MySQLDriver implements IDBDriver{
     private pool: Pool;
@@ -207,5 +208,54 @@ export class MySQLDriver implements IDBDriver{
         }
         return value;
     }
+
+    async dropAllTables(): Promise<void> {
+        if (!this.connection) {
+            throw new Error('Database connection not established');
+        }
+
+        try {
+            const line = `${COLORS.Dim}────────────────────────────────────────────${COLORS.Reset}`;
+            console.log('');
+            console.log(`${COLORS.Yellow}⚠️  Dropping all tables...${COLORS.Reset}`);
+            console.log(line);
+
+            // Disable foreign key checks
+            await this.execute('SET FOREIGN_KEY_CHECKS = 0', []);
+
+            // Get all table names in the current database
+            const result = await this.execute(
+                `SELECT table_name
+             FROM information_schema.tables
+             WHERE table_schema = DATABASE()
+               AND table_type = 'BASE TABLE'`,
+                []
+            );
+
+            const tables = Array.isArray(result) ? result : [result];
+
+            if (tables.length === 0) {
+                console.log(`  ➜  ${COLORS.Cyan}No tables found in database.${COLORS.Reset}`);
+            } else {
+                for (const table of tables) {
+                    const tableName = table.table_name || table.TABLE_NAME;
+                    console.log(`  ➜  ${COLORS.Dim}Dropping table:${COLORS.Reset} ${COLORS.Magenta}${tableName}${COLORS.Reset}`);
+                    await this.execute(`DROP TABLE IF EXISTS ${tableName}`, []);
+                }
+                console.log(line);
+                console.log(`${COLORS.Green}✅  All ${tables.length} tables dropped successfully!${COLORS.Reset}`);
+            }
+
+            // Re-enable foreign key checks
+            await this.execute('SET FOREIGN_KEY_CHECKS = 1', []);
+            console.log(line);
+        } catch (error: any) {
+            // Ensure foreign key checks are re-enabled even if an error occurs
+            await this.execute('SET FOREIGN_KEY_CHECKS = 1', []);
+            FluxErrorHandler.error(`Failed to drop all tables: ${error.message}`);
+            throw error;
+        }
+    }
+
 
 }

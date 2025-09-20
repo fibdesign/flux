@@ -187,6 +187,13 @@ export class Interpreter {
         await this.Database!.runMigrations(migrations)
     }
 
+    async dropAllTables(): Promise<void> {
+        if (!this.Database) {
+            await this.initDatabase();
+        }
+        await this.Database!.dropAllTables();
+    }
+
     runDBSeeders(): void {
 
     }
