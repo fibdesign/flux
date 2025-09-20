@@ -12,6 +12,7 @@ export const tokenSpec: ITokenSpec[] = [
     { type: TOKEN_TYPES.NUMBER, pattern: /\d+/ },
     { type: TOKEN_TYPES.BOOLEAN, pattern: /\btrue\b|\bfalse\b/ },
     { type: TOKEN_TYPES.TYPE, pattern: /\bstring\b|\bint\b|\bbool\b|\bvoid\b|\bfluxReq\b|\bobject\b/ },
+    { type: TOKEN_TYPES.MIGRATION, pattern: /\bmigration\b/ },
     { type: TOKEN_TYPES.OBJECT, pattern: /\bobject\b/ },
     { type: TOKEN_TYPES.FN, pattern: /\bfn\b/ },
     { type: TOKEN_TYPES.RETURN, pattern: /\breturn\b/ },

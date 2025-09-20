@@ -5,6 +5,7 @@ import {TVoidFunction} from "./types/TVoidFunction";
 import {serveCommand} from "./commands/serve.command";
 import {listCommand} from "./commands/list.command";
 import {newCommand} from "./commands/new.command";
+import {migrateCommand} from "./commands/migrate.command";
 
 const input = process.argv.slice(2);
 const command = input[0];
@@ -22,6 +23,10 @@ const commandEntries: TCommandEntry[] = [
     {
         aliases: ['new'],
         handler: () => newCommand(options),
+    },
+    {
+        aliases: ['migrate'],
+        handler: () => migrateCommand(options),
     },
 ];
 

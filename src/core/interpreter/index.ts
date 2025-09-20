@@ -1,4 +1,4 @@
-import {IFunctionNode, IRouteEnv, TFluxASTNode} from "../../types/TFluxAST";
+import {IFunctionNode, IMigrationNode, IRouteEnv, TFluxASTNode} from "../../types/TFluxAST";
 import {AST_TYPES} from "../../constants/AST_TYPES";
 import {FluxErrorHandler} from "../../utils/FluxErrorHandler";
 import {executeEmit} from "./execute.emit";
@@ -22,6 +22,8 @@ import {evaluateMacro} from "./evaluate.macro";
 import {evaluateMacroCall} from "./evaluate.macro.call";
 import {evaluateMemberExpression} from "./evaluate.member.expression";
 import {Database} from "../../database";
+import {executeMigration} from "./execute.migration";
+import {IMigration} from "../../types/IMigration";
 
 export class Interpreter {
     private AST: TFluxASTNode[] = []
@@ -30,6 +32,7 @@ export class Interpreter {
     public Routes: IRouteEnv[] = [];
     public Macros: IMacro;
     public Database: Database | undefined;
+    public Migrations: IMigration[] = [];
 
     constructor() {
         this.ENV = {};
@@ -58,6 +61,10 @@ export class Interpreter {
 
         await this.initDatabase()
 
+        if ('beforeServe' in this.Functions){
+            executeFluxFunction(this, 'beforeServe');
+        }
+
         const server = new HTTPServer(this)
         await server.listen()
 
@@ -74,6 +81,7 @@ export class Interpreter {
             case AST_TYPES.ASSIGNMENT: executeAssignment(this, node);break;
             case AST_TYPES.FUNCTION: executeFunction(this,node);break;
             case AST_TYPES.ROUTER: executeRouter(this,node);break;
+            case AST_TYPES.MIGRATION: executeMigration(this,node);break;
             case AST_TYPES.RETURN: return {__fluxReturn: this.evaluate(node.value)}
         }
     }
@@ -131,5 +139,56 @@ export class Interpreter {
         return false;
     }
 
+    private getSortedMigrations(): IMigration[] {
+        const executed = new Set<string>();
+        const sorted: IMigration[] = [];
+        const migrationsMap: Record<string, IMigration> = {};
+
+        // 1. Build a name → node map
+        for (const migration of this.Migrations) {
+            migrationsMap[migration.name] = migration;
+        }
+
+        // 2. Recursive visit function
+        const visit = (migration: IMigration, visiting = new Set<string>()) => {
+            if (executed.has(migration.name)) return; // already added
+            if (visiting.has(migration.name)) {
+                throw new Error(`Circular dependency detected at migration: ${migration.name}`);
+            }
+
+            visiting.add(migration.name);
+
+            for (const depName of migration.dependencies) {
+                const depMigration = migrationsMap[depName];
+                if (!depMigration) {
+                    throw new Error(`Missing dependency: ${depName} for migration ${migration.name}`);
+                }
+                visit(depMigration, visiting);
+            }
+
+            visiting.delete(migration.name);
+            executed.add(migration.name);
+            sorted.push(migration);
+        };
+
+        // 3. Visit all migrations
+        for (const migration of this.Migrations) {
+            visit(migration);
+        }
+
+        return sorted;
+    }
+    async runDBMigrations(): Promise<void> {
+        if (!this.Database) {
+            await this.initDatabase();
+        }
+
+        const migrations = this.getSortedMigrations();
+        await this.Database!.runMigrations(migrations)
+    }
+
+    runDBSeeders(): void {
+
+    }
 
 }

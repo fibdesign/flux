@@ -43,4 +43,5 @@ export const TOKEN_TYPES = {
     QUESTION: 'QUESTION',
     NULL: 'NULL',
     MACRO: 'MACRO',
+    MIGRATION: 'MIGRATION',
 };

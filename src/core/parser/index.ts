@@ -12,6 +12,7 @@ import {parseFunction} from "./parse.function";
 import {PRECEDENCE} from "../../constants/PRECEDENCE";
 import {AST_TYPES} from "../../constants/AST_TYPES";
 import {parseTemplate} from "./parse.template";
+import {parseMigration} from "./parse.migration";
 
 export class Parser {
     private readonly tokens: IToken[];
@@ -43,6 +44,7 @@ export class Parser {
             [TOKEN_TYPES.EXPORT]: () => parseExport(this),
             [TOKEN_TYPES.IMPORT]: () => parseImport(this),
             [TOKEN_TYPES.FN]: () => parseFunction(this),
+            [TOKEN_TYPES.MIGRATION]: () => parseMigration(this),
         }
 
         while (this.currentToken.type !== TOKEN_TYPES.EOF) {

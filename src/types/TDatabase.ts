@@ -1,3 +1,5 @@
+import {IMigration} from "./IMigration";
+
 export type TDBWhereCondition =
     | { type: 'basic', column: string, operator: string, value: any, boolean: 'and' | 'or' }
     | { type: 'in', column: string, values: any[], boolean: 'and' | 'or' }
@@ -10,6 +12,7 @@ export interface IDBDriver {
     connect(): Promise<void>;
     close(): Promise<void>;
     execute(sql: string, bindings: any[]): Promise<any>;
+    runMigrations(migrations: IMigration[]): Promise<void>;
 }
 
 export interface IDBDriverOptions {

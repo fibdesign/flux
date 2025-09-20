@@ -2,6 +2,8 @@ import {AST_TYPES} from "../constants/AST_TYPES";
 import {IToken} from "./IToken";
 import {TFluxValue} from "./TFluxValue";
 import {IncomingHttpHeaders, IncomingMessage, ServerResponse} from "node:http";
+import {TODO} from "./TODO";
+import {IMigrationColumn} from "./IMigrationColumn";
 
 export interface IASTNode {
     type: string,
@@ -136,6 +138,22 @@ export interface IFuxRequestNode {
     queries: Record<string, string>,
     params:  Record<string, any>,
 }
+
+export interface IMigrationNode extends IASTNode {
+    type: typeof AST_TYPES.MIGRATION,
+    name: string,
+    up:{
+        action: string,
+        table: string,
+        fields: IMigrationColumn[]
+    }[],
+    down:{
+        action: string,
+        table: string,
+        fields: IMigrationColumn[]
+    }[],
+    dependencies: string[]
+}
 export type TFluxASTNode = IRouteNode
     | IRouterNode
     | IEmitNode
@@ -155,4 +173,5 @@ export type TFluxASTNode = IRouteNode
     | ITemplateNode
     | IFuxRequestNode
     | IMacroNode
-    | IMacroCallNode;
+    | IMacroCallNode
+    | IMigrationNode;

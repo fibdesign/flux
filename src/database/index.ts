@@ -2,6 +2,7 @@ import {IDBDriver, IDBDriverOptions} from "../types/TDatabase";
 import {FluxErrorHandler} from "../utils/FluxErrorHandler";
 import {MySQLDriver} from "./connectors/mysql";
 import {ENV} from "../utils/ENV";
+import {IMigration} from "../types/IMigration";
 
 export class Database {
     private readonly envDriver: string;
@@ -31,5 +32,10 @@ export class Database {
                  return new MySQLDriver(this.driverOptions);
             default: FluxErrorHandler.error('Unknown Database driver')
         }
+    }
+
+    async runMigrations(migrations: IMigration[]): Promise<void> {
+        if (!this.driver) FluxErrorHandler.runtime('Database not initialized');
+        await this.driver.runMigrations(migrations);
     }
 }

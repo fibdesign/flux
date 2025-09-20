@@ -18,4 +18,5 @@ export const AST_TYPES = {
     EXPRESSION_STATEMENT: 'expression_statement',
     MACRO: 'macro',
     MACRO_CALL: 'macro_call',
+    MIGRATION: 'migration',
 } as const;
