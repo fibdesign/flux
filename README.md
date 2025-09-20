@@ -1,5 +1,10 @@
 <div style="display: flex; align-items: center; justify-content: center"> <img src="./logo.png" alt="logo"/> </div>
+⚠️ Warning
 
+Flux is still under active development and is not production-ready.
+Things may change quickly, and breaking changes are expected.
+
+Contributions, feedback, and testing are very welcome — if you’d like to help shape Flux, feel free to join in!
 # Flux
 
 Flux is a lightweight **domain-specific language (DSL)** for building **API-only applications**.
