@@ -17,7 +17,7 @@ const parseColumns = (parser: Parser): IMigrationColumn[] => {
         let type = ''
         let defaultValue: any = undefined;
         parser.eat(TOKEN_TYPES.COLON)
-        const StringTypes = parser.eat(TOKEN_TYPES.STRING).value
+        const StringTypes = parser.eat(TOKEN_TYPES.STRING).value.slice(1,-1)
         const listTypes = StringTypes.split('|')
 
         for (const item of listTypes) {
@@ -27,9 +27,9 @@ const parseColumns = (parser: Parser): IMigrationColumn[] => {
                 case 'nullable': nullable = true;break;
                 default:
                     if (item.includes('default:')){
-                        defaultValue = item;
+                        defaultValue = item.replace('default:', '');
                     }else{
-                        type = item.slice(1,-1)
+                        type = item
                     }
             }
         }

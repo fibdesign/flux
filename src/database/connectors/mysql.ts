@@ -163,6 +163,31 @@ export class MySQLDriver implements IDBDriver{
                 return type.toUpperCase(); // fallback for already correct MySQL type
         }
     }
+    private mapDefault(type: string, value: any): string {
+        const t = type.toLowerCase();
+
+        switch (t) {
+            case 'boolean':
+            case 'bool':
+                return (value == 'true' || value == '1') ? '1' : '0';
+
+            case 'datetime':
+            case 'timestamp':
+                if (typeof value === 'string') {
+                    const upperVal = value.toUpperCase().trim();
+                    if (upperVal === 'CURRENT_TIMESTAMP' || upperVal === 'NOW') {
+                        return 'CURRENT_TIMESTAMP';
+                    }
+                }
+                return `'${value}'`;
+
+            default:
+                if (value === null) return 'NULL';
+                return `'${String(value).replace(/'/g, "''")}'`;
+        }
+    }
+
+
     private generateCreateTableSQL(action: IMigrationAction): string {
         const columns = action.fields!.map(field => {
             let columnSQL = `${field.name} ${this.mapType(field.type)}`;
@@ -173,7 +198,7 @@ export class MySQLDriver implements IDBDriver{
 
                 if (field.options.unique) columnSQL += ' UNIQUE';
                 if (field.options.primary) columnSQL += ' PRIMARY KEY';
-                if (field.options.default !== undefined) columnSQL += ` DEFAULT ${this.escapeValue(field.options.default)}`;
+                if (field.options.default !== undefined) columnSQL += ` DEFAULT ${this.mapDefault(field.type, field.options.default)}`;
             }
 
             return columnSQL;
@@ -191,7 +216,7 @@ export class MySQLDriver implements IDBDriver{
             else columnSQL += ' NOT NULL';
 
             if (field.options.unique) columnSQL += ' UNIQUE';
-            if (field.options.default !== undefined) columnSQL += ` DEFAULT ${this.escapeValue(field.options.default)}`;
+            if (field.options.default !== undefined) columnSQL += ` DEFAULT ${this.mapDefault(field.type, field.options.default)}`;
         }
 
         return columnSQL;
